@@ -1,0 +1,237 @@
+/* Global Styles */
+* {
+  margin: 0;
+}
+
+/* Table Styles */
+table {
+  border-collapse: collapse;
+  width: 98%;
+  margin: auto;
+  margin-top: 70px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background: #d0d7d9;
+}
+
+/* Button Styles */
+button {
+  padding: 8px 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-right: 5px;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.delete-button,
+.out-button {
+  background-color: red;
+  color: white;
+}
+
+.delete-button:hover,
+.out-button:hover {
+  background-color: rgb(171, 0, 0);
+  color: white;
+}
+
+.addDelinquent-button {
+  background-color: yellow;
+  color: rgb(0, 0, 0);
+}
+
+.addDelinquent-button:hover {
+  background-color: rgb(192, 192, 0);
+  color: rgb(0, 0, 0);
+}
+
+/* Element Styling */
+#facilityName {
+  transform: translate(-50%, -50%);
+  font-size: x-large;
+}
+
+#loadDateTime {
+  font-size: large;
+}
+
+#refreshIcon {
+  color: rgb(0, 149, 255);
+}
+
+#refreshIcon:hover {
+  cursor: pointer;
+  color: blue;
+}
+
+#errText {
+  color: red;
+  text-align: center;
+  margin-top: 10%;
+}
+
+.clickable:hover {
+  cursor: pointer;
+}
+
+.popup-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 40px;
+  border: 2px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+}
+
+.input-wrapper {
+  margin-bottom: 10px;
+}
+
+input[type="text"],
+.select-button {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.clear-button {
+  background-color: red;
+  margin-bottom: 10px;
+}
+
+.clear-button:hover {
+  background-color: rgb(196, 0, 0);
+}
+
+.select-button {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  background-color: #ff67677c;
+}
+
+.close-button:hover {
+  background-color: #ff6767;
+}
+
+/* Spinner Styles */
+#loading-spinner {
+  position: fixed;
+  left: 50%;
+  top: 150px;
+  transform: translate(-50%, -50%);
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #333;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+/* Animation for the spinner */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hide element by default */
+.hidden {
+  display: none;
+}
+
+/* Show element */
+.visible {
+  display: block;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 60px;
+  padding: 0 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav .left,
+nav .right {
+  display: flex;
+  align-items: center;
+}
+
+nav .right {
+  margin-right: 30px;
+}
+
+nav .left a {
+  font-size: 24px;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+nav .left p {
+  margin: 0;
+}
+
+#facilityName {
+  font-size: 20px;
+  color: rgb(0, 149, 255);
+  position: absolute; /* Add this line */
+  left: 50%; /* Add this line */
+  transform: translateX(-50%); /* Add this line */
+}
+
+#facilityName:hover {
+  color: blue;
+}
