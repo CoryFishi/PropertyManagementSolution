@@ -1,4 +1,4 @@
-# Property Management Software Integration
+# Property Management Solution Integration with API
 
 This Property Management Software is a user-friendly web application designed to efficiently manage units and tenants within properties within a web based application. Seamlessly integrated with the OpenTech API, this portal empowers property managers to effortlessly create units, add tenants, and change delinquency status. This platform gives the ability to change environments all the way from Production to Development. 
 
