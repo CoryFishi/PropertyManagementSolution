@@ -10,6 +10,7 @@ const password = localStorage.getItem("password"); // Retrieves the password fro
 const clientID = localStorage.getItem("client_id"); // Retrieves the client ID from localStorage
 const secretID = localStorage.getItem("secret_id"); // Retrieves the secret ID from localStorage
 const envKey = localStorage.getItem("environment"); // Retrieves the environment key from localStorage
+// console.log(propertyID, username, password, clientID, secretID, envKey);
 let bearerToken; // Holds the bearer token for authentication
 let jsonData; // Holds JSON data fetched from APIs
 let currentTime; // Holds the current time in milliseconds
@@ -317,11 +318,11 @@ async function addUnit(unit) {
     })
     .then((data) => {
       console.log(data);
-      unitImportSuccess.push(" " + unit);
+      unitImportSuccess.push(unit);
     })
     .catch((error) => {
       console.error("There was a problem with the fetch operation:", error);
-      unitImportError.push(" " + unit);
+      unitImportError.push(unit);
     });
 }
 
@@ -544,7 +545,7 @@ document.getElementById("unitButton").addEventListener(
         } else {
           hideLoadingSpinner();
         }
-      }, 50 * unitArray.length);
+      }, 100 * unitArray.length);
       return false;
     }
     //
@@ -567,7 +568,7 @@ document.getElementById("unitButton").addEventListener(
         } else {
           hideLoadingSpinner();
         }
-      }, 50 * unitArray.length);
+      }, 100 * unitArray.length);
       return false;
     }
     //
@@ -588,12 +589,14 @@ document.getElementById("unitButton").addEventListener(
           refreshTable();
         } else {
           hideLoadingSpinner();
+          console.log("Nothing imported.")
         }
-      }, 50 * unitArray.length);
+      }, 1000);
     }
   },
   false
 );
+
 
 // Function to format date and time
 function formatDate(date) {
