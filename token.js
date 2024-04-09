@@ -106,9 +106,9 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   selectButton.classList.add("select-button");
   var options = [
     { value: "", text: "Select" },
-    { value: "option1", text: "Cory - Test Facility" },
-    { value: "option2", text: "Conference Storage" },
-    { value: "option3", text: "QA Facility" },
+    { value: "option1", text: "Option 1" },
+    { value: "option2", text: "Option 2" },
+    { value: "option3", text: "Option 3" },
   ];
   options.forEach(function (option) {
     var optionElement = document.createElement("option");
@@ -122,32 +122,32 @@ document.getElementById("bearerButton").addEventListener("click", function () {
     switch (selectedOption) {
       // Set values based on selected facility
       case "option1":
-        localStorage.setItem("environment", "-Dev");
-        localStorage.setItem("property_id", "1037");
-        localStorage.setItem("client_id", "Cory");
-        localStorage.setItem("secret_id", "GZ4683xVdf3MBqf9aw7KVZrs");
-        localStorage.setItem("username", "LD60At1OyBLL3zLGkLuYVctfz7ffqDTI");
-        localStorage.setItem("password", "piPTpqsU1T65f6tsHKj3hGTUDJDnGJqu");
+        localStorage.setItem("environment", "");
+        localStorage.setItem("property_id", "");
+        localStorage.setItem("client_id", "");
+        localStorage.setItem("secret_id", "");
+        localStorage.setItem("username", "");
+        localStorage.setItem("password", "");
         opened = false;
         location.reload();
         break;
       case "option2":
         localStorage.setItem("environment", "");
-        localStorage.setItem("property_id", "11834");
-        localStorage.setItem("client_id", "6Storage");
-        localStorage.setItem("secret_id", "kOe3fE6kYLpDdyK115TEuF8y");
-        localStorage.setItem("username", "c6dH7hHJSFBprmPuPb3xDFu7tmOuV7EM");
-        localStorage.setItem("password", "tIncVHx0MXrL6mGZQ9Ldvm7yJwZrx5M0");
+        localStorage.setItem("property_id", "");
+        localStorage.setItem("client_id", "");
+        localStorage.setItem("secret_id", "");
+        localStorage.setItem("username", "");
+        localStorage.setItem("password", "");
         opened = false;
         location.reload();
         break;
       case "option3":
-        localStorage.setItem("environment", "-QA");
-        localStorage.setItem("property_id", "2935");
-        localStorage.setItem("client_id", "QASmartLock");
-        localStorage.setItem("secret_id", "s7Dz9J35pGrcOIBqgmpc10RE");
-        localStorage.setItem("username", "9jMEFawlDp1bDWCaMnQwF32h2jo4n4Fm");
-        localStorage.setItem("password", "BU8DCZxfNIWe0LJMnvw1GNGxyNR9u0e9");
+        localStorage.setItem("environment", "");
+        localStorage.setItem("property_id", "");
+        localStorage.setItem("client_id", "");
+        localStorage.setItem("secret_id", "");
+        localStorage.setItem("username", "");
+        localStorage.setItem("password", "");
         opened = false;
         location.reload();
         break;
@@ -163,9 +163,9 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   envButton.classList.add("select-button");
   var envOptions = [
     { value: "", text: localStorage.getItem("environment") === "" ? "Prod" : localStorage.getItem("environment") },
-    { value: "option1", text: "Production" },
-    { value: "option2", text: "Development" },
-    { value: "option3", text: "QA" },
+    { value: "option1", text: "-Prod" },
+    { value: "option2", text: "-Dev" },
+    { value: "option3", text: "-QA" },
   ];
   envOptions.forEach(function (option) {
     var optionElement = document.createElement("option");
