@@ -147,55 +147,69 @@ async function unitList(num) {
 }
 
 // Function to display unit data in a table
-function displayData() {
+async function displayData() {
   var tableBody = document.querySelector("#jsonTable tbody");
   var response = null;
   if (jsonData === undefined) {
     showError();
   }
-  function handleAction(row, action) {
+  async function handleAction(row, action) {
     switch (action) {
       case "Turn Delinquent":
-        response = addDelinquent(row.cells[0].textContent);
+        response = await addDelinquent(row.cells[0].textContent);
         if (response) {
           row.cells[2].textContent = "Delinquent";
           row.deleteCell(8);
           updateButtons(row, "Delinquent");
           hideLoadingSpinner();
+        } else {
+          console.error("Network request failed:", response.statusText);
+          hideLoadingSpinner();
         }
         break;
       case "Turn Rented":
-        response = removeDelinquent(row.cells[0].textContent);
+        response = await removeDelinquent(row.cells[0].textContent);
         if (response) {
           row.cells[2].textContent = "Rented";
           row.deleteCell(8);
           updateButtons(row, "Rented");
           hideLoadingSpinner();
+        } else {
+          console.error("Network request failed:", response.statusText);
+          hideLoadingSpinner();
         }
         break;
       case "Move Out":
-        response = removeVisitor(row.cells[0].textContent);
+        response = await removeVisitor(row.cells[0].textContent);
         if (response) {
           row.cells[2].textContent = "Vacant";
           row.deleteCell(8);
           updateButtons(row, "Vacant");
           hideLoadingSpinner();
+        } else {
+          console.error("Network request failed:", response.statusText);
+          hideLoadingSpinner();
         }
         break;
       case "Move In":
-        response = addVisitor(row.cells[0].textContent);
-        console.log(response);
+        response = await addVisitor(row.cells[0].textContent);
         if (response) {
           row.cells[2].textContent = "Rented";
           row.deleteCell(8);
           updateButtons(row, "Rented");
           hideLoadingSpinner();
+        } else {
+          console.error("Network request failed:", response.statusText);
+          hideLoadingSpinner();
         }
         break;
       case "Delete":
-        response = removeUnit(row.cells[0].textContent);
+        response = await removeUnit(row.cells[0].textContent);
         if (response) {
           row.parentNode.removeChild(row);
+          hideLoadingSpinner();
+        } else {
+          console.error("Network request failed:", response.statusText);
           hideLoadingSpinner();
         }
         break;
@@ -296,67 +310,69 @@ function displayData() {
 
 // Function to add a unit
 async function addUnit(unit) {
-  fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units`,
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-version": "2.0",
-        Authorization: "Bearer " + bearerToken.access_token,
-        "Content-Type": "application/json-patch+json",
-      },
-      body: `{\n  "unitNumber": "${unit}",\n  "extendedData": {\n    "additionalProp1": null,\n    "additionalProp2": null,\n    "additionalProp3": null\n  },\n  "suppressCommands": true\n}`,
-    }
-  )
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("Network response was not ok");
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-version": "2.0",
+          Authorization: "Bearer " + bearerToken.access_token,
+          "Content-Type": "application/json-patch+json",
+        },
+        body: JSON.stringify({
+          unitNumber: unit,
+          extendedData: {
+            additionalProp1: null,
+            additionalProp2: null,
+            additionalProp3: null,
+          },
+          suppressCommands: true,
+        }),
       }
-    })
-    .then((data) => {
-      console.log(data);
-      unitImportSuccess.push(unit);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the fetch operation:", error);
-      unitImportError.push(unit);
-    });
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    return false;
+  }
 }
 
 // Function to remove a unit
 async function removeUnit(unit) {
   showLoadingSpinner();
-  fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/delete/vacant?suppressCommands=true`,
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-version": "2.0",
-        Authorization: "Bearer " + bearerToken.access_token,
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      body: "",
-    }
-  )
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("Network response was not ok");
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/delete/vacant?suppressCommands=true`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-version": "2.0",
+          Authorization: "Bearer " + bearerToken.access_token,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: "",
       }
-    })
-    .then((data) => {
-      console.log(data);
+    );
+    if (response.ok) {
+      hideLoadingSpinner();
       return true;
-    })
-    .catch((error) => {
-      console.error("There was a problem with the fetch operation:", error);
-      alert(error.message);
-    });
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    alert(error.message);
+    hideLoadingSpinner();
+    return false;
+  }
 }
 
 // Function to generate a random access code for the addVisitor function
@@ -370,233 +386,180 @@ function generateRandomCode(length) {
 // Function to add a visitor
 async function addVisitor(unit) {
   showLoadingSpinner();
-  fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-version": "2.0",
-        Authorization: "Bearer " + bearerToken.access_token,
-        "Content-Type": "application/json-patch+json",
-      },
-      body: `{
-            "timeGroupId": 0,
-            "accessProfileId": 0,
-            "unitId": ${unit},
-            "accessCode": ${generateRandomCode(4)},
-            "lastName": "Tenant",
-            "firstName": "Fake",
-            "email": "test@example.com",
-            "mobilePhoneNumber": ${generateRandomCode(10)},
-            "isTenant": true,
-            "extendedData": {
-                "additionalProp1": null,
-                "additionalProp2": null,
-                "additionalProp3": null
-            },
-            "suppressCommands": true
-        }`,
-    }
-  )
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("Network response was not ok");
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-version": "2.0",
+          Authorization: "Bearer " + bearerToken.access_token,
+          "Content-Type": "application/json-patch+json",
+        },
+        body: JSON.stringify({
+          timeGroupId: 0,
+          accessProfileId: 0,
+          unitId: unit,
+          accessCode: generateRandomCode(4),
+          lastName: "Tenant",
+          firstName: "Fake",
+          email: "test@example.com",
+          mobilePhoneNumber: generateRandomCode(10),
+          isTenant: true,
+          extendedData: {
+            additionalProp1: null,
+            additionalProp2: null,
+            additionalProp3: null,
+          },
+          suppressCommands: true,
+        }),
       }
-    })
-    .then((data) => {
-      console.log(data);
+    );
+    if (response.ok) {
+      hideLoadingSpinner();
       return true;
-    })
-    .catch((error) => {
-      console.error("There was a problem with the fetch operation:", error);
-      alert(error.message);
-    });
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    alert(error.message);
+    hideLoadingSpinner();
+    return false;
+  }
 }
-
 // Function to remove a visitor
 async function removeVisitor(unit) {
   showLoadingSpinner();
-  fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/vacate?suppressCommands=true`,
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-version": "2.0",
-        Authorization: "Bearer " + bearerToken.access_token,
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      body: "",
-    }
-  )
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("Network response was not ok");
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/vacate?suppressCommands=true`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-version": "2.0",
+          Authorization: "Bearer " + bearerToken.access_token,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: "",
       }
-    })
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the fetch operation:", error);
-      alert(error.message);
-    });
+    );
+    if (response.ok) {
+      hideLoadingSpinner();
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    alert(error.message);
+    hideLoadingSpinner();
+    return false;
+  }
 }
 
 // Function to mark a unit as delinquent
 async function addDelinquent(unit) {
   showLoadingSpinner();
-  fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/disable?suppressCommands=true`,
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-version": "2.0",
-        Authorization: "Bearer " + bearerToken.access_token,
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      body: "",
-    }
-  )
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("Network response was not ok");
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/disable?suppressCommands=true`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-version": "2.0",
+          Authorization: "Bearer " + bearerToken.access_token,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: "",
       }
-    })
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the fetch operation:", error);
-      alert(error.message);
-    });
-  showLoadingSpinner();
+    );
+    if (response.ok) {
+      hideLoadingSpinner();
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    alert(error.message);
+    hideLoadingSpinner();
+    return false;
+  }
 }
 
 // Function to mark a delinquent unit as active
 async function removeDelinquent(unit) {
   showLoadingSpinner();
-  fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/enable?suppressCommands=true`,
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-version": "2.0",
-        Authorization: "Bearer " + bearerToken.access_token,
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      body: "",
-    }
-  )
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("Network response was not ok");
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/enable?suppressCommands=true`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-version": "2.0",
+          Authorization: "Bearer " + bearerToken.access_token,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: "",
       }
-    })
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the fetch operation:", error);
-      alert(error.message);
-    });
+    );
+    if (response.ok) {
+      hideLoadingSpinner();
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    alert(error.message);
+    hideLoadingSpinner();
+    return false;
+  }
 }
 
 // Event listener for adding a unit
 document.getElementById("unitButton").addEventListener(
   "click",
-  function () {
+  async function () {
     unitImportError = [];
     unitImportSuccess = [];
     var userInput = prompt("Unit Number(s):", "");
-    state = true;
     if (userInput === null) {
       return false;
     }
     unitArray = userInput.split(/\s+/);
-    //
-    if (userInput.length > 9 && userInput.includes(" ")) {
-      showLoadingSpinner();
-      unitArray.forEach(function (e) {
-        if (e.length > 9) {
-          unitImportError.push(e);
-          return;
-        }
-        addUnit(e);
-      });
-      setTimeout(() => {
-        if (unitImportError.length !== 0) {
-          alert("Unable to import units: " + unitImportError);
-        }
-        if (unitImportSuccess.length !== 0) {
-          alert("Imported units: " + unitImportSuccess);
-          refreshTable();
-        } else {
-          hideLoadingSpinner();
-        }
-      }, 100 * unitArray.length);
-      return false;
-    }
-    //
-    else if (userInput.includes(" ")) {
-      showLoadingSpinner();
-      unitArray.forEach(function (e) {
-        if (e.length > 9) {
-          unitImportError.push(e);
-          return;
-        }
-        addUnit(e);
-      });
-      setTimeout(() => {
-        if (unitImportError.length !== 0) {
-          alert("Unable to import units: " + unitImportError);
-        }
-        if (unitImportSuccess.length !== 0) {
-          alert("Imported units: " + unitImportSuccess);
-          refreshTable();
-        } else {
-          hideLoadingSpinner();
-        }
-      }, 100 * unitArray.length);
-      return false;
-    }
-    //
-    else {
-      if (userInput.length < 9 && userInput.length > 0) {
-        showLoadingSpinner();
-        addUnit(userInput);
+
+    showLoadingSpinner();
+    for (let i = 0; i < unitArray.length; i++) {
+      const unit = unitArray[i];
+      if (unit.length > 9) {
+        unitImportError.push(unit);
       } else {
-        alert(userInput + " is too long!");
-        return;
-      }
-      setTimeout(() => {
-        if (unitImportError.length !== 0) {
-          alert("Unable to import unit: " + unitImportError);
-        }
-        if (unitImportSuccess.length !== 0) {
-          alert("Imported unit: " + unitImportSuccess);
-          refreshTable();
+        const success = await addUnit(unit);
+        if (success) {
+          unitImportSuccess.push(unit);
         } else {
-          hideLoadingSpinner();
-          console.log("Nothing imported.")
+          unitImportError.push(unit);
         }
-      }, 1000);
+      }
     }
+
+    if (unitImportError.length !== 0) {
+      alert("Unable to import units: " + unitImportError);
+    }
+    if (unitImportSuccess.length !== 0) {
+      alert("Imported units: " + unitImportSuccess);
+      refreshTable();
+    }
+    hideLoadingSpinner();
   },
   false
 );
-
 
 // Function to format date and time
 function formatDate(date) {
@@ -667,7 +630,7 @@ function sortTable(columnIndex) {
 }
 
 // Function to refresh the json table
-function refreshTable() {
+async function refreshTable() {
   showLoadingSpinner();
   hideError();
   var table = document.getElementById("jsonTable");
@@ -705,28 +668,35 @@ function hideLoadingSpinner() {
 }
 
 // On webpage load function
-function onWebLoad() {
-  // Show load date
-  window.addEventListener("load", displayLoadDateTime);
+async function onWebLoad() {
   // Show loading spinner
   showLoadingSpinner();
+  
   // Create bearer token
-  createBearer(username, password, clientID, secretID);
+  await createBearer(username, password, clientID, secretID);
+  
   // Get unit data
-  setTimeout(() => {
-    unitList(propertyID);
-  }, 1000);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  await unitList(propertyID);
+  
   // Get the facility name and display it
-  setTimeout(() => {
-    getFacility();
-  }, 2000);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  await getFacility();
+  
   // Display the unit table
-  setTimeout(() => {
-    displayData();
-    hideLoadingSpinner();
-    sortTable(1);
-  }, 2000);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  await displayData();
+  
+  // Hide loading spinner
+  hideLoadingSpinner();
+  
+  // Sort the table
+  sortTable(1);
+
+  // Show load date
+  displayLoadDateTime();
 }
+
 
 /*----------------------------------------------------------------
                         On window load
@@ -735,5 +705,5 @@ onWebLoad();
 
 //reload the page every 30 minutes in order to refresh the bearer token and validate data
 setTimeout(() => {
-    location.reload();
-  }, 1800000);
+  location.reload();
+}, 1800000);
