@@ -1,41 +1,86 @@
+:root {
+  --table-background: white;
+  --table-border: #ddd;
+  --table-header: #f2f2f2;
+  --table-hover: #d0d7d9;
+  --btn-green: #4caf50;
+  --btn-green-hover: #45a049;
+  --btn-red: red;
+  --btn-red-hover: rgb(171, 0, 0);
+  --btn-red-clear: #ff67677c;
+  --btn-red-clear-hover: rgb(171, 0, 0);
+  --btn-yellow: yellow;
+  --btn-yellow-hover: rgb(192, 192, 0);
+  --clickable-blue: rgb(0, 149, 255);
+  --clickable-blue-hover: blue;
+  --text-white: white;
+  --text-black: black;
+  --popup-background: white;
+  --body-background: white;
+  --body-text: black;
+  --nav-background: rgba(255, 255, 255, 0.15);
+}
+.darkmode {
+  --table-background: #38414A;
+  --table-border: #1D2125;
+  --table-header: #2C333A;
+  --table-hover: #22272B;
+  --btn-green: #4caf50;
+  --btn-green-hover: #45a049;
+  --btn-red: red;
+  --btn-red-hover: rgb(171, 0, 0);
+  --btn-red-clear: #ff67677c;
+  --btn-red-clear-hover: rgb(171, 0, 0);
+  --btn-yellow: yellow;
+  --btn-yellow-hover: rgb(192, 192, 0);
+  --clickable-blue: rgb(0, 149, 255);
+  --clickable-blue-hover: blue;
+  --text-white: white;
+  --text-black: black;
+  --popup-background: #161A1D;
+  --body-background: #22272B;
+  --body-text: white;
+  --nav-background: rgba(0, 0, 0, 0.15);
+}
+
 /* Global Styles */
 * {
   margin: 0;
 }
-
+body {
+  background-color: var(--body-background);
+  color: var(--body-text  )
+}
 /* Table Styles */
 table {
   border-collapse: collapse;
   width: 98%;
   margin: auto;
   margin-top: 70px;
+  background-color: var(--table-background);
 }
-
 th,
 td {
-  border: 1px solid #ddd;
+  border: 1px solid var(--table-border);
   padding: 8px;
   text-align: left;
 }
-
 th {
-  background-color: #f2f2f2;
+  background-color: var(--table-header);
   font-weight: bold;
 }
-
 tr:nth-child(even) {
-  background-color: #f2f2f2;
+  background-color: var(--table-header);
 }
-
 tr:hover {
-  background: #d0d7d9;
+  background: var(--table-hover);
 }
 
 /* Button Styles */
 button {
   padding: 8px 12px;
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--btn-green);
+  color: var(--text-white);
   border: none;
   cursor: pointer;
   margin-right: 5px;
@@ -43,29 +88,27 @@ button {
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: var(--btn-green-hover);
 }
 
 .delete-button,
 .out-button {
-  background-color: red;
-  color: white;
+  background-color: var(--btn-red);
 }
 
 .delete-button:hover,
-.out-button:hover {
-  background-color: rgb(171, 0, 0);
-  color: white;
+.out-button:hover,
+.clear-button:hover,
+.close-button:hover {
+  background-color: var(--btn-red-hover);
 }
 
 .addDelinquent-button {
-  background-color: yellow;
-  color: rgb(0, 0, 0);
+  background-color: var(--btn-yellow);
+  color: var(--text-black);
 }
-
 .addDelinquent-button:hover {
-  background-color: rgb(192, 192, 0);
-  color: rgb(0, 0, 0);
+  background-color: var(--btn-yellow-hover);
 }
 
 /* Element Styling */
@@ -79,12 +122,13 @@ button:hover {
 }
 
 #refreshIcon {
-  color: rgb(0, 149, 255);
+  color: var(--clickable-blue);
 }
 
-#refreshIcon:hover {
+#refreshIcon:hover,
+#facilityName:hover {
   cursor: pointer;
-  color: blue;
+  color: var(--clickable-blue-hover);
 }
 
 #errText {
@@ -102,9 +146,9 @@ button:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
+  background: var(--popup-background);
   padding: 40px;
-  border: 2px solid #ccc;
+  border: 2px solid var(--table-border);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   z-index: 9999;
 }
@@ -117,7 +161,7 @@ input[type="text"],
 .select-button {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--table-border);
   border-radius: 4px;
   box-sizing: border-box;
   margin-top: 4px;
@@ -125,17 +169,13 @@ input[type="text"],
 }
 
 .clear-button {
-  background-color: red;
+  background-color: var(--btn-red);
   margin-bottom: 10px;
-}
-
-.clear-button:hover {
-  background-color: rgb(196, 0, 0);
 }
 
 .select-button {
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--table-border);
   border-radius: 4px;
   box-sizing: border-box;
   margin-bottom: 4px;
@@ -146,11 +186,7 @@ input[type="text"],
   top: 10px;
   right: 10px;
   cursor: pointer;
-  background-color: #ff67677c;
-}
-
-.close-button:hover {
-  background-color: #ff6767;
+  background-color: var(--btn-red-clear);
 }
 
 /* Spinner Styles */
@@ -162,8 +198,8 @@ input[type="text"],
 }
 
 .spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #333;
+  border: 4px solid var(--table-border);
+  border-left-color: var(--clickable-blue);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -194,14 +230,14 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--nav-background);
   backdrop-filter: blur(15px);
   position: fixed;
   top: 0;
   width: 100%;
   height: 60px;
   padding: 0 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--table-border);
 }
 
 nav .left,
@@ -226,12 +262,58 @@ nav .left p {
 
 #facilityName {
   font-size: 20px;
-  color: rgb(0, 149, 255);
-  position: absolute; /* Add this line */
-  left: 50%; /* Add this line */
-  transform: translateX(-50%); /* Add this line */
+  color: var(--clickable-blue);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-#facilityName:hover {
-  color: blue;
+/* DarkMode Slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 14px;
+  margin-right: 5px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  margin-right: 5px;
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 10px;
+  width: 10px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #2196F3;
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(10.5px);
+  -ms-transform: translateX(10.5px);
+  transform: translateX(10.5px);
 }
