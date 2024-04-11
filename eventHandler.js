@@ -161,6 +161,7 @@ async function displayData() {
           row.cells[2].textContent = "Delinquent";
           row.deleteCell(8);
           updateButtons(row, "Delinquent");
+          countTableRowsByStatus();
           hideLoadingSpinner();
         } else {
           console.error("Network request failed:", response.statusText);
@@ -173,6 +174,7 @@ async function displayData() {
           row.cells[2].textContent = "Rented";
           row.deleteCell(8);
           updateButtons(row, "Rented");
+          countTableRowsByStatus();
           hideLoadingSpinner();
         } else {
           console.error("Network request failed:", response.statusText);
@@ -185,6 +187,7 @@ async function displayData() {
           row.cells[2].textContent = "Vacant";
           row.deleteCell(8);
           updateButtons(row, "Vacant");
+          countTableRowsByStatus();
           hideLoadingSpinner();
         } else {
           console.error("Network request failed:", response.statusText);
@@ -197,6 +200,7 @@ async function displayData() {
           row.cells[2].textContent = "Rented";
           row.deleteCell(8);
           updateButtons(row, "Rented");
+          countTableRowsByStatus();
           hideLoadingSpinner();
         } else {
           console.error("Network request failed:", response.statusText);
@@ -207,6 +211,7 @@ async function displayData() {
         response = await removeUnit(row.cells[0].textContent);
         if (response) {
           row.parentNode.removeChild(row);
+          countTableRowsByStatus();
           hideLoadingSpinner();
         } else {
           console.error("Network request failed:", response.statusText);
@@ -260,14 +265,20 @@ async function displayData() {
   }
   jsonData.forEach(function (item) {
     var row = tableBody.insertRow();
-    row.insertCell().textContent = item.id;
+    var idCell = row.insertCell();
+    idCell.textContent = item.id;
+    idCell.classList.add("idCell");
     row.insertCell().textContent = item.unitNumber;
+    var unitNumber = item.unitNumber;
     row.insertCell().textContent = item.status;
     row.insertCell().textContent = item.facilityId;
     row.insertCell().textContent = item.propertyNumber;
     row.insertCell().textContent = item.extendedData.additionalProp1;
     row.insertCell().textContent = item.extendedData.additionalProp2;
     row.insertCell().textContent = item.extendedData.additionalProp3;
+    idCell.addEventListener("click", function () {
+      getVisitor(unitNumber);
+    });
     var buttonCell = row.insertCell();
     buttons = [];
     switch (item.status) {
@@ -584,49 +595,56 @@ function displayLoadDateTime() {
 }
 
 // Function to sort the table
-function sortTable(columnIndex) {
-  var table,
-    rows,
-    switching,
-    i,
-    x,
-    y,
-    shouldSwitch,
-    dir,
-    switchcount = 0;
-  table = document.getElementById("jsonTable");
-  switching = true;
-  dir = "asc";
-  while (switching) {
-    switching = false;
-    rows = table.rows;
-    for (i = 1; i < rows.length - 1; i++) {
-      shouldSwitch = false;
-      x = rows[i].getElementsByTagName("TD")[columnIndex];
-      y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
-      if (dir == "asc") {
-        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-          shouldSwitch = true;
-          break;
-        }
-      } else if (dir == "desc") {
-        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-          shouldSwitch = true;
-          break;
+async function sortTable(columnIndex) {
+  showLoadingSpinner();
+
+  return new Promise((resolve, reject) => {
+    var table,
+      rows,
+      switching,
+      i,
+      x,
+      y,
+      shouldSwitch,
+      dir,
+      switchcount = 0;
+    table = document.getElementById("jsonTable");
+    switching = true;
+    dir = "asc";
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+      for (i = 1; i < rows.length - 1; i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("TD")[columnIndex];
+        y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+        if (dir == "asc") {
+          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        } else if (dir == "desc") {
+          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
         }
       }
-    }
-    if (shouldSwitch) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-      switchcount++;
-    } else {
-      if (switchcount == 0 && dir == "asc") {
-        dir = "desc";
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
         switching = true;
+        switchcount++;
+      } else {
+        if (switchcount == 0 && dir == "asc") {
+          dir = "desc";
+          switching = true;
+        }
       }
     }
-  }
+    resolve();
+  }).then(() => {
+    hideLoadingSpinner();
+  });
 }
 
 // Function to refresh the json table
@@ -650,6 +668,7 @@ async function refreshTable() {
   }, 1005);
   setTimeout(() => {
     displayLoadDateTime();
+    countTableRowsByStatus();
   }, 1005);
 }
 
@@ -671,32 +690,32 @@ function hideLoadingSpinner() {
 async function onWebLoad() {
   // Show loading spinner
   showLoadingSpinner();
-  
+
   // Create bearer token
   await createBearer(username, password, clientID, secretID);
-  
+
   // Get unit data
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   await unitList(propertyID);
-  
+
   // Get the facility name and display it
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   await getFacility();
-  
+
   // Display the unit table
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   await displayData();
-  
+  await countTableRowsByStatus();
+
   // Hide loading spinner
   hideLoadingSpinner();
-  
+
   // Sort the table
   sortTable(1);
 
   // Show load date
   displayLoadDateTime();
 }
-
 
 /*----------------------------------------------------------------
                         On window load
@@ -707,3 +726,197 @@ onWebLoad();
 setTimeout(() => {
   location.reload();
 }, 1800000);
+
+function countTableRowsByStatus() {
+  var table = document.getElementById("jsonTable");
+  const rented = document.getElementById("rented");
+  const delinquent = document.getElementById("delinquent");
+  const vacant = document.getElementById("vacant");
+  var rentedCount = 0;
+  var delinquentCount = 0;
+  var vacantCount = 0;
+
+  for (var i = 1; i < table.rows.length; i++) {
+    var statusCell = table.rows[i].getElementsByTagName("TD")[2];
+    var status = statusCell.textContent.trim().toLowerCase(); // Assuming the status is stored in a <td> element
+
+    if (status === "rented") {
+      rentedCount++;
+    } else if (status === "delinquent") {
+      delinquentCount++;
+    } else if (status === "vacant") {
+      vacantCount++;
+    }
+  }
+  rented.textContent = rentedCount;
+  delinquent.textContent = delinquentCount;
+  vacant.textContent = vacantCount;
+  // console.log("Rented: " + rentedCount);
+  // console.log("Delinquent: " + delinquentCount);
+  // console.log("Vacant: " + vacantCount);
+}
+async function getVisitor(unit) {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
+      {
+        headers: {
+          Authorization: "Bearer " + (await bearerToken.access_token),
+          accept: "application/json",
+          "api-version": "2.0",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      updateVisitor(data);
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    return false;
+  }
+}
+async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + (await bearerToken.access_token),
+          accept: "application/json",
+          "api-version": "2.0",
+          "Content-Type": "application/json-patch+json",
+        },
+        body: `{\n  "accessCode": "${code}",\n  "lastName": "${lname}",\n  "firstName": "${fname}",\n  "email": "${email}",\n  "mobilePhoneNumber": "${phone}",\n  "suppressCommands": true\n}`
+      }
+    );
+    if (response.ok) {
+      console.log(response);
+      const data = await response.json();
+      console.log(data);
+      return true;
+    } else {
+      console.log(response);
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    return false;
+  }
+}
+
+async function updateVisitor(info) {
+  console.log(info);
+  const nameParts = info[0].name.split(" ");
+  document.body.style.overflow = "hidden";
+  const popupContainer = document.createElement("div");
+  popupContainer.classList.add("popup-container");
+  const labels = [
+    "FirstName",
+    "LastName",
+    "Email",
+    "Mobile Phone Number",
+    "Code",
+  ];
+  const inputs = [];
+  labels.forEach((labelText) => {
+    const label = document.createElement("label");
+    label.textContent = labelText + ":";
+    const input = document.createElement("input");
+    input.setAttribute("type", "text");
+    const storedKey = labelText.replace(/\s+/g, "");
+    var storedValue = info[0][labelText.charAt(0).toLowerCase() + labelText.slice(1).replace(/\s+/g, "")];
+    if (labelText === "FirstName") {
+      storedValue = nameParts[0];
+    }
+    if (labelText === "LastName") {
+      storedValue = nameParts[1];
+    }
+    input.setAttribute(
+      "placeholder",
+      storedValue || "Enter " + labelText.charAt(0).toLowerCase() + labelText.slice(1).replace(/\s+/g, "")
+    );
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("input-wrapper");
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+    inputs.push(input);
+    popupContainer.appendChild(wrapper);
+  });
+  const submitButton = document.createElement("button");
+  submitButton.textContent = "Submit";
+  submitButton.classList.add("submit-button");
+  submitButton.addEventListener("click", function () {
+    if (inputs[0].value === "") {
+      inputs[0].value = nameParts[0];
+    }
+    if (inputs[1].value === "") {
+      inputs[1].value = nameParts[1];
+    }
+    if (inputs[2].value === "") {
+      inputs[2].value = info[0].email;
+    }
+    if (inputs[3].value === "") {
+      inputs[3].value = info[0].mobilePhoneNumber;
+    }
+    if (inputs[4].value === "") {
+      inputs[4].value = info[0].code;
+    }
+    sendUpdateVisitor(inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, info[0].id);
+    document.body.removeChild(popupContainer);
+    opened = false;
+    document.body.style.overflow = "";
+  });
+  // Create close button
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "X";
+  closeButton.classList.add("close-button");
+  closeButton.addEventListener("click", function () {
+    opened = false;
+    document.body.removeChild(popupContainer);
+    document.body.style.overflow = "";
+  });
+  // Append elements to popup container
+  popupContainer.appendChild(closeButton);
+  popupContainer.appendChild(submitButton);
+  document.body.appendChild(popupContainer);
+}
+
+
+//
+//
+// DarkMode
+//
+//
+let darkMode = localStorage.getItem("darkMode");
+const darkModeToggle = document.querySelector("#darkModeToggle");
+const enableDarkMode = () => {
+  document.body.classList.add("darkmode");
+  localStorage.setItem("darkMode", "enabled");
+};
+
+const disableDarkMode = () => {
+  document.body.classList.remove("darkmode");
+  localStorage.setItem("darkMode", null);
+};
+darkModeToggle.checked = darkMode === "enabled";
+darkModeToggle.addEventListener("change", () => {
+  checkDarkMode();
+});
+function checkDarkMode() {
+  if (darkModeToggle.checked) {
+    enableDarkMode();
+  } else {
+    disableDarkMode();
+  }
+}
+checkDarkMode();
+//
+//
+//
+//
+//
