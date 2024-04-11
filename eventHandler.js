@@ -18,6 +18,7 @@ let expirationTime; // Holds the expiration time of the bearer token
 let timeUntilExpiration; // Holds the time until the bearer token expires
 let unitImportError = []; // Holds import errors for units
 let unitImportSuccess = []; // Holds import successes for units
+let noFillMoveIn = false; // No fill Move In Response Tracker
 
 /*----------------------------------------------------------------
                         Function Declarations
@@ -195,16 +196,31 @@ async function displayData() {
         }
         break;
       case "Move In":
-        response = await addVisitor(row.cells[0].textContent);
-        if (response) {
-          row.cells[2].textContent = "Rented";
-          row.deleteCell(8);
-          updateButtons(row, "Rented");
-          countTableRowsByStatus();
-          hideLoadingSpinner();
+        const toggle = localStorage.getItem("autofillMode");
+        if (toggle !== "enabled") {
+          response = await addVisitorNoFill(row.cells[0].textContent);
+          if (response === "Sent") {
+            row.cells[2].textContent = "Rented";
+            row.deleteCell(8);
+            updateButtons(row, "Rented");
+            countTableRowsByStatus();
+            hideLoadingSpinner();
+          } else {
+            hideLoadingSpinner();
+            console.error("Network request failed:", response);
+          }
         } else {
-          console.error("Network request failed:", response.statusText);
-          hideLoadingSpinner();
+          response = await addVisitor(row.cells[0].textContent);
+          if (response) {
+            row.cells[2].textContent = "Rented";
+            row.deleteCell(8);
+            updateButtons(row, "Rented");
+            countTableRowsByStatus();
+            hideLoadingSpinner();
+          } else {
+            hideLoadingSpinner();
+            console.error("Network request failed:", response);
+          }
         }
         break;
       case "Delete":
@@ -271,11 +287,21 @@ async function displayData() {
     row.insertCell().textContent = item.unitNumber;
     var unitNumber = item.unitNumber;
     row.insertCell().textContent = item.status;
-    row.insertCell().textContent = item.facilityId;
-    row.insertCell().textContent = item.propertyNumber;
-    row.insertCell().textContent = item.extendedData.additionalProp1;
-    row.insertCell().textContent = item.extendedData.additionalProp2;
-    row.insertCell().textContent = item.extendedData.additionalProp3;
+    var facilityIdCell = row.insertCell();
+    var propertyNumberCell = row.insertCell();
+    facilityIdCell.textContent = item.facilityId;
+    propertyNumberCell.textContent = item.propertyNumber;
+    facilityIdCell.classList.add("hide-column");
+    propertyNumberCell.classList.add("hide-column");
+    var prop1Cell = row.insertCell();
+    var prop2Cell = row.insertCell();
+    var prop3Cell = row.insertCell();
+    prop1Cell.classList.add("hide-column");
+    prop2Cell.classList.add("hide-column");
+    prop3Cell.classList.add("hide-column");
+    prop1Cell.textContent = item.extendedData.additionalProp1;
+    prop2Cell.textContent = item.extendedData.additionalProp2;
+    prop3Cell.textContent = item.extendedData.additionalProp3;
     idCell.addEventListener("click", function () {
       getVisitor(unitNumber);
     });
@@ -414,8 +440,8 @@ async function addVisitor(unit) {
           unitId: unit,
           accessCode: generateRandomCode(4),
           lastName: "Tenant",
-          firstName: "Fake",
-          email: "test@example.com",
+          firstName: "Temporary",
+          email: "automations@temp.com",
           mobilePhoneNumber: generateRandomCode(10),
           isTenant: true,
           extendedData: {
@@ -439,6 +465,137 @@ async function addVisitor(unit) {
     hideLoadingSpinner();
     return false;
   }
+}
+async function addVisitorNoFill(unit) {
+  disableButtons();
+  showLoadingSpinner();
+  return new Promise((resolve, reject) => {
+    document.body.style.overflow = "hidden";
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("popup-container");
+    const labels = [
+      "FirstName",
+      "LastName",
+      "Email",
+      "Mobile Phone Number",
+      "Code",
+    ];
+    const inputs = [];
+    labels.forEach((labelText) => {
+      const label = document.createElement("label");
+      label.textContent = labelText + ":";
+      const input = document.createElement("input");
+      input.setAttribute("type", "text");
+      input.setAttribute(
+        "placeholder",
+        "Enter " +
+          labelText.charAt(0).toLowerCase() +
+          labelText.slice(1).replace(/\s+/g, "")
+      );
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("input-wrapper");
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      inputs.push(input);
+      popupContainer.appendChild(wrapper);
+    });
+    const submitButton = document.createElement("button");
+    submitButton.textContent = "Submit";
+    submitButton.classList.add("submit-button");
+    submitButton.addEventListener("click", async function () {
+      let isEmpty = false;
+      inputs.forEach((input) => {
+        if (input.value === "") {
+          isEmpty = true;
+          return;
+        }
+      });
+      if (isEmpty) {
+        alert("Please enter a value!");
+        return;
+      }
+      sendAddVisitorNoFill(
+        inputs[0].value,
+        inputs[1].value,
+        inputs[2].value,
+        inputs[3].value,
+        inputs[4].value,
+        unit
+      );
+      document.body.removeChild(popupContainer);
+      opened = false;
+      enableButtons();
+      document.body.style.overflow = "";
+    });
+    // Create close button
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "X";
+    closeButton.classList.add("close-button");
+    closeButton.addEventListener("click", function () {
+      opened = false;
+      enableButtons();
+      document.body.removeChild(popupContainer);
+      document.body.style.overflow = "";
+      resolve("Closed");
+    });
+    // Append elements to popup container
+    popupContainer.appendChild(closeButton);
+    popupContainer.appendChild(submitButton);
+    document.body.appendChild(popupContainer);
+    async function sendAddVisitorNoFill(
+      fname,
+      lname,
+      email,
+      phone,
+      code,
+      unit
+    ) {
+      try {
+        const response = await fetch(
+          `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+          {
+            method: "POST",
+            headers: {
+              accept: "application/json",
+              "api-version": "2.0",
+              Authorization: "Bearer " + bearerToken.access_token,
+              "Content-Type": "application/json-patch+json",
+            },
+            body: JSON.stringify({
+              timeGroupId: 0,
+              accessProfileId: 0,
+              unitId: unit,
+              accessCode: code,
+              lastName: lname,
+              firstName: fname,
+              email: email,
+              mobilePhoneNumber: phone,
+              isTenant: true,
+              extendedData: {
+                additionalProp1: null,
+                additionalProp2: null,
+                additionalProp3: null,
+              },
+              suppressCommands: true,
+            }),
+          }
+        );
+        if (response.ok) {
+          resolve("Sent");
+          hideLoadingSpinner();
+          return true;
+        } else {
+          throw new Error("Network response was not ok");
+        }
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
+        resolve("Closed");
+        alert(error.message);
+        hideLoadingSpinner();
+        return false;
+      }
+    }
+  });
 }
 // Function to remove a visitor
 async function removeVisitor(unit) {
@@ -647,6 +804,22 @@ async function sortTable(columnIndex) {
   });
 }
 
+// Function to disable all buttons
+function disableButtons() {
+  var buttons = document.getElementsByTagName("button");
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].disabled = true;
+  }
+}
+
+// Function to enable all buttons
+function enableButtons() {
+  var buttons = document.getElementsByTagName("button");
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].disabled = false;
+  }
+}
+
 // Function to refresh the json table
 async function refreshTable() {
   showLoadingSpinner();
@@ -705,7 +878,7 @@ async function onWebLoad() {
   // Display the unit table
   await new Promise((resolve) => setTimeout(resolve, 1000));
   await displayData();
-  await countTableRowsByStatus();
+  countTableRowsByStatus();
 
   // Hide loading spinner
   hideLoadingSpinner();
@@ -732,6 +905,7 @@ function countTableRowsByStatus() {
   const rented = document.getElementById("rented");
   const delinquent = document.getElementById("delinquent");
   const vacant = document.getElementById("vacant");
+  const total = document.getElementById("total");
   var rentedCount = 0;
   var delinquentCount = 0;
   var vacantCount = 0;
@@ -751,6 +925,7 @@ function countTableRowsByStatus() {
   rented.textContent = rentedCount;
   delinquent.textContent = delinquentCount;
   vacant.textContent = vacantCount;
+  total.textContent = vacantCount + delinquentCount + rentedCount;
   // console.log("Rented: " + rentedCount);
   // console.log("Delinquent: " + delinquentCount);
   // console.log("Vacant: " + vacantCount);
@@ -791,7 +966,7 @@ async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
           "api-version": "2.0",
           "Content-Type": "application/json-patch+json",
         },
-        body: `{\n  "accessCode": "${code}",\n  "lastName": "${lname}",\n  "firstName": "${fname}",\n  "email": "${email}",\n  "mobilePhoneNumber": "${phone}",\n  "suppressCommands": true\n}`
+        body: `{\n  "accessCode": "${code}",\n  "lastName": "${lname}",\n  "firstName": "${fname}",\n  "email": "${email}",\n  "mobilePhoneNumber": "${phone}",\n  "suppressCommands": true\n}`,
       }
     );
     if (response.ok) {
@@ -810,7 +985,6 @@ async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
 }
 
 async function updateVisitor(info) {
-  console.log(info);
   const nameParts = info[0].name.split(" ");
   document.body.style.overflow = "hidden";
   const popupContainer = document.createElement("div");
@@ -829,7 +1003,11 @@ async function updateVisitor(info) {
     const input = document.createElement("input");
     input.setAttribute("type", "text");
     const storedKey = labelText.replace(/\s+/g, "");
-    var storedValue = info[0][labelText.charAt(0).toLowerCase() + labelText.slice(1).replace(/\s+/g, "")];
+    var storedValue =
+      info[0][
+        labelText.charAt(0).toLowerCase() +
+          labelText.slice(1).replace(/\s+/g, "")
+      ];
     if (labelText === "FirstName") {
       storedValue = nameParts[0];
     }
@@ -838,7 +1016,10 @@ async function updateVisitor(info) {
     }
     input.setAttribute(
       "placeholder",
-      storedValue || "Enter " + labelText.charAt(0).toLowerCase() + labelText.slice(1).replace(/\s+/g, "")
+      storedValue ||
+        "Enter " +
+          labelText.charAt(0).toLowerCase() +
+          labelText.slice(1).replace(/\s+/g, "")
     );
     const wrapper = document.createElement("div");
     wrapper.classList.add("input-wrapper");
@@ -866,7 +1047,14 @@ async function updateVisitor(info) {
     if (inputs[4].value === "") {
       inputs[4].value = info[0].code;
     }
-    sendUpdateVisitor(inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, info[0].id);
+    sendUpdateVisitor(
+      inputs[0].value,
+      inputs[1].value,
+      inputs[2].value,
+      inputs[3].value,
+      inputs[4].value,
+      info[0].id
+    );
     document.body.removeChild(popupContainer);
     opened = false;
     document.body.style.overflow = "";
@@ -885,8 +1073,6 @@ async function updateVisitor(info) {
   popupContainer.appendChild(submitButton);
   document.body.appendChild(popupContainer);
 }
-
-
 //
 //
 // DarkMode
@@ -898,7 +1084,6 @@ const enableDarkMode = () => {
   document.body.classList.add("darkmode");
   localStorage.setItem("darkMode", "enabled");
 };
-
 const disableDarkMode = () => {
   document.body.classList.remove("darkmode");
   localStorage.setItem("darkMode", null);
@@ -917,6 +1102,25 @@ function checkDarkMode() {
 checkDarkMode();
 //
 //
+// Tenant Information Autofill Toggle
 //
 //
-//
+let autofillMode = localStorage.getItem("autofillMode");
+const autofillToggle = document.querySelector("#autofillCheckbox");
+const enableAutofillMode = () => {
+  localStorage.setItem("autofillMode", "enabled");
+};
+const disableAutofillMode = () => {
+  localStorage.setItem("autofillMode", null);
+};
+autofillToggle.checked = autofillMode === "enabled";
+autofillToggle.addEventListener("change", () => {
+  checkAutofillMode();
+});
+function checkAutofillMode() {
+  if (autofillToggle.checked) {
+    enableAutofillMode();
+  } else {
+    disableAutofillMode();
+  }
+}

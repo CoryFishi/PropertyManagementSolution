@@ -3,8 +3,9 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>PMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css" />
+    <title>Property Manager</title>
   </head>
   <body>
     <!-- Navigation -->
@@ -15,12 +16,11 @@
       </div>
       <a href="#" id="facilityName">Facility Loading...</a>
       <div class="right">
+        <label class="darkModeCheckbox">Dark Mode</label>
         <label class="switch">
           <input type="checkbox" id="darkModeToggle">
           <span class="slider round"></span>
         </label>
-        <button id="unitButton">Add Unit</button>
-        <button id="bearerButton">Update Auth</button>
       </div>
     </nav>
     <!-- Loading Spinner .hidden on load -->
@@ -29,6 +29,9 @@
     </div>
 
     <div class="header-container">
+      <div class="left-container">
+
+      </div>
       <div class="status-container">
         <div class="status-item">
           <h2 id="rented">0</h2>
@@ -42,9 +45,26 @@
           <h2 id="vacant">0</h2>
           <p>Vacant</p>
         </div>
+        <div class="status-item">
+          <h2 id="total">0</h2>
+          <p>Total</p>
+        </div>
+      </div>
+      <div class="center-container">
+        
       </div>
       <div class="btn-container">
-        
+        <div class="checkbox-container">
+          <label for="autofillCheckbox" class="checkbox-label">Enable Tenant Autofill:</label>
+          <div>
+            <label class="switch">
+              <input type="checkbox" id="autofillCheckbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <button id="unitButton">Add Unit</button>
+        <button id="bearerButton">Update Auth</button>
       </div>
     </div>
     <!-- Unit Data Table -->
@@ -54,11 +74,11 @@
           <th onclick="sortTable(0)" class="clickable">ID</th>
           <th onclick="sortTable(1)" class="clickable">Unit Number</th>
           <th onclick="sortTable(2)" class="clickable">Status</th>
-          <th onclick="sortTable(3)" class="clickable">Facility ID</th>
-          <th onclick="sortTable(4)" class="clickable">Property Number</th>
-          <th onclick="sortTable(5)" class="clickable">Additional Prop 1</th>
-          <th onclick="sortTable(6)" class="clickable">Additional Prop 2</th>
-          <th onclick="sortTable(7)" class="clickable">Additional Prop 3</th>
+          <th onclick="sortTable(3)" class="clickable hide-column">Facility ID</th>
+          <th onclick="sortTable(4)" class="clickable hide-column">Property Number</th>
+          <th onclick="sortTable(5)" class="clickable hide-column">Additional Prop 1</th>
+          <th onclick="sortTable(6)" class="clickable hide-column">Additional Prop 2</th>
+          <th onclick="sortTable(7)" class="clickable hide-column">Additional Prop 3</th>
           <th>Actions</th>
         </tr>
       </thead>

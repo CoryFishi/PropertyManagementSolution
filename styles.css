@@ -1,51 +1,39 @@
 :root {
+  --body-background: white;
+  --body-text: black;
+  --btn-green: #4caf50;
+  --btn-green-hover: #45a049;
+  --btn-red: red;
+  --btn-red-hover: rgb(171, 0, 0);
+  --btn-red-clear: #ff67677c;
+  --btn-red-clear-hover: rgb(171, 0, 0);
+  --btn-yellow: yellow;
+  --btn-yellow-hover: rgb(192, 192, 0);
+  --clickable-blue: rgb(0, 149, 255);
+  --clickable-blue-hover: blue;
+  --input-background: #F7F8F9;
+  --nav-background: rgba(255, 255, 255, 0.15);
+  --popup-background: white;
   --table-background: white;
   --table-border: #ddd;
   --table-header: #f2f2f2;
   --table-hover: #d0d7d9;
-  --btn-green: #4caf50;
-  --btn-green-hover: #45a049;
-  --btn-red: red;
-  --btn-red-hover: rgb(171, 0, 0);
-  --btn-red-clear: #ff67677c;
-  --btn-red-clear-hover: rgb(171, 0, 0);
-  --btn-yellow: yellow;
-  --btn-yellow-hover: rgb(192, 192, 0);
-  --clickable-blue: rgb(0, 149, 255);
-  --clickable-blue-hover: blue;
-  --text-white: white;
   --text-black: black;
-  --popup-background: white;
-  --body-background: white;
-  --body-text: black;
-  --nav-background: rgba(255, 255, 255, 0.15);
-  --input-background: #F7F8F9;
+  --text-white: white;
 }
+
 .darkmode {
+  --body-background: #22272B;
+  --body-text: white;
+  --input-background: rgb(222,228,234);
+  --nav-background: rgba(0, 0, 0, 0.15);
+  --popup-background: #2C333A;
   --table-background: #38414A;
   --table-border: #1D2125;
   --table-header: #2C333A;
   --table-hover: #22272B;
-  --btn-green: #4caf50;
-  --btn-green-hover: #45a049;
-  --btn-red: red;
-  --btn-red-hover: rgb(171, 0, 0);
-  --btn-red-clear: #ff67677c;
-  --btn-red-clear-hover: rgb(171, 0, 0);
-  --btn-yellow: yellow;
-  --btn-yellow-hover: rgb(192, 192, 0);
-  --clickable-blue: rgb(0, 149, 255);
-  --clickable-blue-hover: blue;
-  --text-white: white;
-  --text-black: black;
-  --popup-background: #2C333A;
-  --body-background: #22272B;
-  --body-text: white;
-  --nav-background: rgba(0, 0, 0, 0.15);
-  --input-background: rgb(222,228,234);
 }
 
-/* Global Styles */
 * {
   margin: 0;
 }
@@ -53,7 +41,7 @@ body {
   background-color: var(--body-background);
   color: var(--body-text  )
 }
-/* Table Styles */
+
 table {
   border-collapse: collapse;
   width: 98%;
@@ -77,7 +65,6 @@ tr:hover {
   background: var(--table-hover);
 }
 
-/* Button Styles */
 button {
   padding: 8px 12px;
   background-color: var(--btn-green);
@@ -112,7 +99,6 @@ button:hover {
   background-color: var(--btn-yellow-hover);
 }
 
-/* Element Styling */
 #facilityName {
   transform: translate(-50%, -50%);
   font-size: x-large;
@@ -191,7 +177,6 @@ input[type="text"],
   background-color: var(--btn-red-clear);
 }
 
-/* Spinner Styles */
 #loading-spinner {
   position: fixed;
   left: 50%;
@@ -208,7 +193,6 @@ input[type="text"],
   animation: spin 1s linear infinite;
 }
 
-/* Animation for the spinner */
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -218,12 +202,10 @@ input[type="text"],
   }
 }
 
-/* Hide element by default */
 .hidden {
   display: none;
 }
 
-/* Show element */
 .visible {
   display: block;
 }
@@ -270,7 +252,6 @@ nav .left p {
   transform: translateX(-50%);
 }
 
-/* DarkMode Slider */
 .switch {
   position: relative;
   display: inline-block;
@@ -339,17 +320,58 @@ input:checked + .slider:before {
 .status-item p {
   color: #666;
 }
-.btn-container {
-  background-color: #2b2b2b;
-  width: 66.666%;
+.center-container {
+  width: 11.111%;
+  height: 100%;
+}
+.left-container {
+  width: 33.333%;
   height: 100px;
+}
+.btn-container {
+  width: 22.222%;
+  height: 100%;
+  display: flex;
+  justify-content: right;
+  align-items: center;
   margin-right: 1%;
 }
-
+.btn-container button {
+  text-align: center;
+}
 .idCell {
   cursor: pointer;
   color: var(--clickable-blue);
 }
 .idCell:hover {
   color: var(--clickable-blue-hover);
+}
+@media screen and (max-width: 700px) {
+  .status-container {
+    display: none;
+  }
+  .center-container {
+    width: 44.444%;
+  }
+}
+@media screen and (max-width: 900px) {
+  .hide-column {
+    display: none;
+  }
+}
+@media screen and (max-width: 1200px) {
+  #loadDateTime {
+    display: none;
+  }
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 10px;
+}
+
+.darkModeCheckbox {
+  margin-right: 10px;
 }
