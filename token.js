@@ -1,33 +1,15 @@
 // Variable to track if popup is opened
 var opened = false;
 
-// Function to disable all buttons
-function disableButtons() {
-  var buttons = document.getElementsByTagName("button");
-  for (var i = 0; i < buttons.length; i++) {
-    buttons[i].disabled = true;
-  }
-}
-
-// Function to enable all buttons
-function enableButtons() {
-  var buttons = document.getElementsByTagName("button");
-  for (var i = 0; i < buttons.length; i++) {
-    buttons[i].disabled = false;
-  }
-}
-
 // Event listener for bearerButton click
 document.getElementById("bearerButton").addEventListener("click", function () {
   // Check if popup is already opened
-  if (opened) {
-    return false; // Exit function if already opened
-  }
+  if (opened) return false;
 
   // Disable scrolling on body
   document.body.style.overflow = "hidden";
-  opened = true; // Mark popup as opened
-  disableButtons(); // Disable buttons while popup is open
+  opened = true;
+  disableButtons();
 
   // Create popup container
   const popupContainer = document.createElement("div");
@@ -106,9 +88,9 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   selectButton.classList.add("select-button");
   var options = [
     { value: "", text: "Select" },
-    { value: "option1", text: "Option 1" },
-    { value: "option2", text: "Option 2" },
-    { value: "option3", text: "Option 3" },
+    { value: "option1", text: "option1" },
+    { value: "option2", text: "option2" },
+    { value: "option3", text: "option3" },
   ];
   options.forEach(function (option) {
     var optionElement = document.createElement("option");
@@ -163,9 +145,9 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   envButton.classList.add("select-button");
   var envOptions = [
     { value: "", text: localStorage.getItem("environment") === "" ? "Prod" : localStorage.getItem("environment") },
-    { value: "option1", text: "-Prod" },
-    { value: "option2", text: "-Dev" },
-    { value: "option3", text: "-QA" },
+    { value: "option1", text: "Production" },
+    { value: "option2", text: "Development" },
+    { value: "option3", text: "QA" },
   ];
   envOptions.forEach(function (option) {
     var optionElement = document.createElement("option");

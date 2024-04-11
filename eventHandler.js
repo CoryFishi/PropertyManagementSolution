@@ -19,6 +19,7 @@ let timeUntilExpiration; // Holds the time until the bearer token expires
 let unitImportError = []; // Holds import errors for units
 let unitImportSuccess = []; // Holds import successes for units
 let noFillMoveIn = false; // No fill Move In Response Tracker
+opened = false; // Variable to track if popup is opened
 
 /*----------------------------------------------------------------
                         Function Declarations
@@ -467,6 +468,7 @@ async function addVisitor(unit) {
   }
 }
 async function addVisitorNoFill(unit) {
+  opened = true;
   disableButtons();
   showLoadingSpinner();
   return new Promise((resolve, reject) => {
@@ -807,16 +809,24 @@ async function sortTable(columnIndex) {
 // Function to disable all buttons
 function disableButtons() {
   var buttons = document.getElementsByTagName("button");
+  var checkboxes = document.querySelectorAll("input[type='checkbox']");
   for (var i = 0; i < buttons.length; i++) {
     buttons[i].disabled = true;
+  }
+  for (var j = 0; j < checkboxes.length; j++) {
+    checkboxes[j].disabled = true;
   }
 }
 
 // Function to enable all buttons
 function enableButtons() {
   var buttons = document.getElementsByTagName("button");
+  var checkboxes = document.querySelectorAll("input[type='checkbox']");
   for (var i = 0; i < buttons.length; i++) {
     buttons[i].disabled = false;
+  }
+  for (var j = 0; j < checkboxes.length; j++) {
+    checkboxes[j].disabled = false;
   }
 }
 
@@ -985,10 +995,13 @@ async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
 }
 
 async function updateVisitor(info) {
+  if (opened) return;
   const nameParts = info[0].name.split(" ");
   document.body.style.overflow = "hidden";
   const popupContainer = document.createElement("div");
   popupContainer.classList.add("popup-container");
+  disableButtons();
+  opened = true;
   const labels = [
     "FirstName",
     "LastName",
@@ -1057,6 +1070,7 @@ async function updateVisitor(info) {
     );
     document.body.removeChild(popupContainer);
     opened = false;
+    enableButtons();
     document.body.style.overflow = "";
   });
   // Create close button
@@ -1065,6 +1079,7 @@ async function updateVisitor(info) {
   closeButton.classList.add("close-button");
   closeButton.addEventListener("click", function () {
     opened = false;
+    enableButtons();
     document.body.removeChild(popupContainer);
     document.body.style.overflow = "";
   });
