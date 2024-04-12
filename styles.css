@@ -346,6 +346,11 @@ input:checked + .slider:before {
 .idCell:hover {
   color: var(--clickable-blue-hover);
 }
+@media screen and (max-width: 500px) {
+  .darkModeCheckbox {
+    display: none;
+  }
+}
 @media screen and (max-width: 700px) {
   .status-container {
     display: none;
