@@ -30,6 +30,9 @@
 
     <div class="header-container">
       <div class="left-container">
+        <button onclick="exportJSONToCSV('tenants.csv')" style="font-size:medium;">Export to CSV</button>
+        <input type="file" id="csvFileInput" accept=".csv" onchange="readCSVFile(event)" style="display:none;">
+        <label for="csvFileInput" class="import-btn">Import CSV</label>
 
       </div>
       <div class="status-container">
@@ -89,5 +92,6 @@
     <!-- JavaScript Includes -->
     <script src="token.js"></script>
     <script src="eventHandler.js"></script>
+    <script src="export.js"></script>
   </body>
 </html>

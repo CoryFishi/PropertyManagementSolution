@@ -65,7 +65,7 @@ tr:hover {
   background: var(--table-hover);
 }
 
-button {
+button, .import-btn {
   padding: 8px 12px;
   background-color: var(--btn-green);
   color: var(--text-white);
@@ -73,9 +73,10 @@ button {
   cursor: pointer;
   margin-right: 5px;
   border-radius: 4px;
+  font-size: medium;
 }
 
-button:hover {
+button:hover, .import-btn:hover {
   background-color: var(--btn-green-hover);
 }
 
@@ -327,6 +328,9 @@ input:checked + .slider:before {
 .left-container {
   width: 33.333%;
   height: 100px;
+  display: flex;
+  align-items: center;
+  margin-left: 1%;
 }
 .btn-container {
   width: 22.222%;
