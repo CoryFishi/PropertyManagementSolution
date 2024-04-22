@@ -27,7 +27,7 @@
     <div id="loading-spinner" class="hidden">
       <div class="spinner"></div>
     </div>
-
+    <!-- Header Containers -->
     <div class="header-container">
       <div class="left-container">
         <button onclick="exportJSONToCSV('tenants.csv')" style="font-size:medium;">Export to CSV</button>
@@ -54,7 +54,6 @@
         </div>
       </div>
       <div class="center-container">
-        
       </div>
       <div class="btn-container">
         <div class="checkbox-container">
@@ -87,6 +86,12 @@
       </thead>
       <tbody></tbody>
     </table>
+    <!-- Pagnation buttons -->
+    <div class="center-buttons">
+      <button onclick="previousPage()">Back</button>
+      <span id="pageIndicator">Page 0 of 0</span>
+      <button onclick="nextPage()">Next</button>
+    </div>
     <!-- Error Notification -->
     <p id="errText">Error Loading...</p>
     <!-- JavaScript Includes -->

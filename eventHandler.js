@@ -852,6 +852,7 @@ async function refreshTable() {
   setTimeout(() => {
     displayLoadDateTime();
     countTableRowsByStatus();
+    displayRows();
   }, 1005);
 }
 
@@ -898,6 +899,7 @@ async function onWebLoad() {
 
   // Show load date
   displayLoadDateTime();
+  displayRows();
 }
 
 /*----------------------------------------------------------------
@@ -1137,5 +1139,34 @@ function checkAutofillMode() {
     enableAutofillMode();
   } else {
     disableAutofillMode();
+  }
+}
+let currentPage = 1;
+let totalPages = 1;
+function displayRows() {
+  const rowsPerPage = 50;
+  const table = document.getElementById('jsonTable');
+  const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+  totalPages = Math.ceil(rows.length / rowsPerPage);  
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].style.display = 'none';  // Hide all rows initially
+  }
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  for (let i = start; i < end && i < rows.length; i++) {
+    rows[i].style.display = '';  // Show only the rows for the current page
+  }
+  document.getElementById('pageIndicator').innerText = `Page ${currentPage} of ${totalPages}`;
+}
+function nextPage() {
+  if (currentPage < totalPages) {
+    currentPage++;
+    displayRows();
+  }
+}
+function previousPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    displayRows();
   }
 }
