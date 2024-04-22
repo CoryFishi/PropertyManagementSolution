@@ -2,6 +2,8 @@
 
 This Property Management Software is a user-friendly web application designed to efficiently manage units and tenants within properties within a web based application. Seamlessly integrated with the OpenTech API, this portal empowers property managers to effortlessly create units, add tenants, and change delinquency status. This platform gives the ability to change environments all the way from Production to Development. 
 
+Currently in use by the OpenTech QA Team.
+
 ## Table of Contents
 - [Technology](#technology)
 - [Usage](#usage)
@@ -49,3 +51,5 @@ This Property Management Software is a user-friendly web application designed to
   - **Unit status count:** Located at the top of the page is the count of Rented, Delinquent, Vacant, and grand total of all units tied to the selected facility.
   - **Page responsiveness:** When the page reaches certain stages of size the page correctly removes/resized elements to keep the experience enjoyable.
   - **Facility URL link:** The facility name located in the navigation bar links you directed to the access control page with OpenTech.
+  - **Pagination:** Save system resources by limiting the amount of units displayed at one time with the pagination tool.
+  - **Import/Export of Tenant Details:** Every tenant is able to mass updated by use of importing/exporting a csv file.
