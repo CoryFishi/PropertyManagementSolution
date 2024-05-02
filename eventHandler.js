@@ -9,8 +9,9 @@ const username = localStorage.getItem("username"); // Retrieves the username fro
 const password = localStorage.getItem("password"); // Retrieves the password from localStorage
 const clientID = localStorage.getItem("client_id"); // Retrieves the client ID from localStorage
 const secretID = localStorage.getItem("secret_id"); // Retrieves the secret ID from localStorage
-const envKey = localStorage.getItem("environment"); // Retrieves the environment key from localStorage
-// console.log(propertyID, username, password, clientID, secretID, envKey);
+var envKey = localStorage.getItem("environment"); // Retrieves the environment key from localStorage
+const stageKey = localStorage.getItem("stageKey"); // Retrieves the stage key from localStorage
+// console.log(propertyID, username, password, clientID, secretID, envKey, stageKey);
 let bearerToken; // Holds the bearer token for authentication
 let jsonData; // Holds JSON data fetched from APIs
 let currentTime; // Holds the current time in milliseconds
@@ -21,13 +22,18 @@ let unitImportSuccess = []; // Holds import successes for units
 let noFillMoveIn = false; // No fill Move In Response Tracker
 opened = false; // Variable to track if popup is opened
 
+// Check if staging is enabled, if so disable envKey
+if (stageKey !== "") {
+  envKey = "";
+}
+
 /*----------------------------------------------------------------
                         Function Declarations
 ----------------------------------------------------------------*/
 // Function to create a bearer token for authentication
 async function createBearer(user, pass, id, secret) {
   currentTime = Date.now();
-  fetch(`https://auth.insomniaccia${envKey}.com/auth/token`, {
+  fetch(`https://auth.${stageKey}insomniaccia${envKey}.com/auth/token`, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -65,7 +71,7 @@ async function createBearer(user, pass, id, secret) {
 // Function to fetch facility data
 async function getFacility() {
   fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}`,
+    `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}`,
     {
       headers: {
         accept: "application/json",
@@ -87,7 +93,7 @@ async function getFacility() {
       if (facilityElement.href !== "#") {
         facilityElement.target = "_blank";
       }
-      facilityElement.href = `https://portal.insomniaccia${envKey}.com/facility/${propertyID}/dashboard`;
+      facilityElement.href = `https://portal.${stageKey}insomniaccia${envKey}.com/facility/${propertyID}/dashboard`;
     })
     .catch((error) => {
       console.error("There was a problem with the fetch operation:", error);
@@ -125,7 +131,7 @@ function hideError() {
 async function unitList(num) {
   // console.log(bearerToken.access_token);
   fetch(
-    `https://accesscontrol.insomniaccia${envKey}.com/facilities/${num}/units`,
+    `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${num}/units`,
     {
       headers: {
         Authorization: "Bearer " + (await bearerToken.access_token),
@@ -350,7 +356,7 @@ async function displayData() {
 async function addUnit(unit) {
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units`,
       {
         method: "POST",
         headers: {
@@ -387,7 +393,7 @@ async function removeUnit(unit) {
   showLoadingSpinner();
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/delete/vacant?suppressCommands=true`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/delete/vacant?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -426,7 +432,7 @@ async function addVisitor(unit) {
   showLoadingSpinner();
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
       {
         method: "POST",
         headers: {
@@ -554,7 +560,7 @@ async function addVisitorNoFill(unit) {
     ) {
       try {
         const response = await fetch(
-          `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+          `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
           {
             method: "POST",
             headers: {
@@ -604,7 +610,7 @@ async function removeVisitor(unit) {
   showLoadingSpinner();
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/vacate?suppressCommands=true`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/vacate?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -635,7 +641,7 @@ async function addDelinquent(unit) {
   showLoadingSpinner();
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/disable?suppressCommands=true`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/disable?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -666,7 +672,7 @@ async function removeDelinquent(unit) {
   showLoadingSpinner();
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/enable?suppressCommands=true`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/enable?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -945,7 +951,7 @@ function countTableRowsByStatus() {
 async function getVisitor(unit) {
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
       {
         headers: {
           Authorization: "Bearer " + (await bearerToken.access_token),
@@ -969,7 +975,7 @@ async function getVisitor(unit) {
 async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
       {
         method: "POST",
         headers: {

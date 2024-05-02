@@ -110,6 +110,7 @@ document.getElementById("bearerButton").addEventListener("click", function () {
         localStorage.setItem("secret_id", "");
         localStorage.setItem("username", "");
         localStorage.setItem("password", "");
+        localStorage.setItem("stageKey", "");
         opened = false;
         location.reload();
         break;
@@ -120,6 +121,7 @@ document.getElementById("bearerButton").addEventListener("click", function () {
         localStorage.setItem("secret_id", "");
         localStorage.setItem("username", "");
         localStorage.setItem("password", "");
+        localStorage.setItem("stageKey", "");
         opened = false;
         location.reload();
         break;
@@ -130,6 +132,7 @@ document.getElementById("bearerButton").addEventListener("click", function () {
         localStorage.setItem("secret_id", "");
         localStorage.setItem("username", "");
         localStorage.setItem("password", "");
+        localStorage.setItem("stageKey", "");
         opened = false;
         location.reload();
         break;
@@ -144,10 +147,17 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   const envButton = document.createElement("select");
   envButton.classList.add("select-button");
   var envOptions = [
-    { value: "", text: localStorage.getItem("environment") === "" ? "Prod" : localStorage.getItem("environment") },
+    {
+      value: "",
+      text:
+        localStorage.getItem("environment") === ""
+          ? "Prod"
+          : localStorage.getItem("environment"),
+    },
     { value: "option1", text: "Production" },
     { value: "option2", text: "Development" },
     { value: "option3", text: "QA" },
+    { value: "option4", text: "Staging" },
   ];
   envOptions.forEach(function (option) {
     var optionElement = document.createElement("option");
@@ -162,16 +172,24 @@ document.getElementById("bearerButton").addEventListener("click", function () {
       // Set environment based on selected option
       case "option1":
         localStorage.setItem("environment", "");
+        localStorage.setItem("stageKey", "");
         opened = false;
         location.reload();
         break;
       case "option2":
         localStorage.setItem("environment", "-Dev");
+        localStorage.setItem("stageKey", "");
         opened = false;
         location.reload();
         break;
       case "option3":
         localStorage.setItem("environment", "-Qa");
+        localStorage.setItem("stageKey", "");
+        opened = false;
+        location.reload();
+        break;
+      case "option4":
+        localStorage.setItem("stageKey", "cia-stg-1.aws.");
         opened = false;
         location.reload();
         break;
