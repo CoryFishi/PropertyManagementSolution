@@ -18,22 +18,29 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   // Create inputs for properties
   const labels = [
     "Property ID",
-    "Username",
-    "Password",
+    "Authorization Key",
+    "Authorization Secret",
     "Client ID",
-    "Secret ID",
+    "Client Secret",
+  ];
+  const storedKeys = [
+    "property_id",
+    "username",
+    "password",
+    "client_id",
+    "secret_id",
   ];
   const inputs = [];
-  labels.forEach((labelText) => {
+  labels.forEach((labelText, index) => {
     const label = document.createElement("label");
     label.textContent = labelText + ":";
     const input = document.createElement("input");
     input.setAttribute("type", "text");
-    const storedKey = labelText.replace(/\s+/g, "_").toLowerCase();
+    const storedKey = storedKeys[index];
     const storedValue = localStorage.getItem(storedKey);
     input.setAttribute(
       "placeholder",
-      storedValue || "Enter " + labelText.toLowerCase().replace(/\s+/g, "_")
+      storedValue || "Enter " + labelText.toLowerCase().replace(/\s+/g, " ")
     );
     const wrapper = document.createElement("div");
     wrapper.classList.add("input-wrapper");
@@ -82,7 +89,7 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   // Create saved facilities dropdown
   const savedWrapper = document.createElement("div");
   const savedLabel = document.createElement("label");
-  savedLabel.textContent = "Saved Facilities:";
+  savedLabel.textContent = "Saved Facilities: (currently disabled)";
   savedWrapper.appendChild(savedLabel);
   const selectButton = document.createElement("select");
   selectButton.classList.add("select-button");
@@ -150,8 +157,14 @@ document.getElementById("bearerButton").addEventListener("click", function () {
     {
       value: "",
       text:
-        localStorage.getItem("environment") === ""
-          ? "Prod"
+        localStorage.getItem("stageKey") !== ""
+          ? "Staging"
+          : localStorage.getItem("environment").includes("-Qa")
+          ? "QA"
+          : localStorage.getItem("environment").includes("-Dev")
+          ? "Development"
+          : localStorage.getItem("environment") === ""
+          ? "Production"
           : localStorage.getItem("environment"),
     },
     { value: "option1", text: "Production" },
