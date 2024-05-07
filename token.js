@@ -61,7 +61,7 @@ document.getElementById("bearerButton").addEventListener("click", function () {
       if (value !== "") {
         reloadNeeded = true;
         localStorage.setItem(
-          labels[index].toLowerCase().replace(/\s+/g, "_"),
+          storedKeys[index].toLowerCase().replace(/\s+/g, "_"),
           value
         );
       }
