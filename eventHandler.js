@@ -26,7 +26,7 @@ opened = false; // Variable to track if popup is opened
 if (stageKey !== "") {
   envKey = "";
 }
-
+console.log(propertyID, username, password, clientID, secretID, envKey, stageKey);
 /*----------------------------------------------------------------
                         Function Declarations
 ----------------------------------------------------------------*/
@@ -497,8 +497,8 @@ async function addVisitorNoFill(unit) {
       input.setAttribute(
         "placeholder",
         "Enter " +
-          labelText.charAt(0).toLowerCase() +
-          labelText.slice(1).replace(/\s+/g, "")
+        labelText.charAt(0).toLowerCase() +
+        labelText.slice(1).replace(/\s+/g, "")
       );
       const wrapper = document.createElement("div");
       wrapper.classList.add("input-wrapper");
@@ -809,8 +809,12 @@ async function sortTable(columnIndex) {
     resolve();
   }).then(() => {
     hideLoadingSpinner();
+    // Reset to the first page after sorting
+    currentPage = 1;
+    displayRows();
   });
 }
+
 
 // Function to disable all buttons
 function disableButtons() {
@@ -1026,8 +1030,8 @@ async function updateVisitor(info) {
     const storedKey = labelText.replace(/\s+/g, "");
     var storedValue =
       info[0][
-        labelText.charAt(0).toLowerCase() +
-          labelText.slice(1).replace(/\s+/g, "")
+      labelText.charAt(0).toLowerCase() +
+      labelText.slice(1).replace(/\s+/g, "")
       ];
     if (labelText === "FirstName") {
       storedValue = nameParts[0];
@@ -1038,9 +1042,9 @@ async function updateVisitor(info) {
     input.setAttribute(
       "placeholder",
       storedValue ||
-        "Enter " +
-          labelText.charAt(0).toLowerCase() +
-          labelText.slice(1).replace(/\s+/g, "")
+      "Enter " +
+      labelText.charAt(0).toLowerCase() +
+      labelText.slice(1).replace(/\s+/g, "")
     );
     const wrapper = document.createElement("div");
     wrapper.classList.add("input-wrapper");
@@ -1147,13 +1151,19 @@ function checkAutofillMode() {
     disableAutofillMode();
   }
 }
+//
+//
+// Pagination
+//
+//
 let currentPage = 1;
 let totalPages = 1;
+
 function displayRows() {
   const rowsPerPage = 50;
   const table = document.getElementById('jsonTable');
   const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-  totalPages = Math.ceil(rows.length / rowsPerPage);  
+  totalPages = Math.ceil(rows.length / rowsPerPage);
   for (let i = 0; i < rows.length; i++) {
     rows[i].style.display = 'none';  // Hide all rows initially
   }
@@ -1162,14 +1172,16 @@ function displayRows() {
   for (let i = start; i < end && i < rows.length; i++) {
     rows[i].style.display = '';  // Show only the rows for the current page
   }
-  document.getElementById('pageIndicator').innerText = `Page ${currentPage} of ${totalPages}`;
+  document.getElementById('pageIndicator').innerText = `${currentPage} of ${totalPages}`;
 }
+
 function nextPage() {
   if (currentPage < totalPages) {
     currentPage++;
     displayRows();
   }
 }
+
 function previousPage() {
   if (currentPage > 1) {
     currentPage--;

@@ -46,6 +46,7 @@ table {
   border-collapse: collapse;
   width: 98%;
   margin: auto;
+  min-height: 20vh;
   background-color: var(--table-background);
 }
 th,
@@ -121,6 +122,7 @@ button:hover, .import-btn:hover {
 
 #errText {
   color: red;
+  font-size: x-large;
   text-align: center;
   margin-top: 10%;
 }
@@ -182,7 +184,7 @@ input[type="text"],
   position: fixed;
   left: 50%;
   top: 250px;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%);
 }
 
 .spinner {
@@ -391,4 +393,7 @@ input:checked + .slider:before {
   align-items: center;
   margin-top: 20px;
   gap: 5px;
+}
+.center-buttons button {
+  margin: 0;
 }
