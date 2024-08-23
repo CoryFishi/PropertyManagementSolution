@@ -1,6 +1,11 @@
 // Variable to track if popup is opened
 var opened = false;
 
+if (!localStorage.getItem("environment")) {
+  localStorage.setItem("environment", "");
+  console.log(localStorage.getItem("environment"));
+}
+
 // Event listener for bearerButton click
 document.getElementById("bearerButton").addEventListener("click", function () {
   // Check if popup is already opened
@@ -81,6 +86,8 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   clearButton.classList.add("clear-button");
   clearButton.addEventListener("click", function () {
     localStorage.clear();
+    localStorage.setItem("environment", "");
+    localStorage.setItem("stageKey", "");
     document.body.removeChild(popupContainer);
     opened = false;
     location.reload();

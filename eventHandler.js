@@ -21,15 +21,98 @@ let unitImportError = []; // Holds import errors for units
 let unitImportSuccess = []; // Holds import successes for units
 let noFillMoveIn = false; // No fill Move In Response Tracker
 opened = false; // Variable to track if popup is opened
+const errorText = document.getElementById("errText");
+var accessProfiles;
+var timeProfiles;
 
 // Check if staging is enabled, if so disable envKey
 if (stageKey !== "") {
   envKey = "";
 }
-console.log(propertyID, username, password, clientID, secretID, envKey, stageKey);
+
+if (
+  propertyID === null ||
+  username === null ||
+  password === null ||
+  clientID === null ||
+  secretID === null
+) {
+  bearerButton.classList.add("pulsate");
+}
+
+console.log(
+  propertyID,
+  username,
+  password,
+  clientID,
+  secretID,
+  envKey,
+  stageKey
+);
+
 /*----------------------------------------------------------------
                         Function Declarations
 ----------------------------------------------------------------*/
+// Function to get facility time profiles
+async function getTimeProfiles() {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia-dev.com/facilities/1037/timegroups`,
+      {
+        headers: {
+          accept: "application/json",
+          Authorization: "Bearer " + bearerToken.access_token, // Ensure this token is correct
+          "api-version": "2.0",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      throw new Error("Data is not an array");
+    }
+    timeProfiles = data;
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+  }
+}
+
+// Function to get facility access profiles
+async function getAccessProfiles() {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.insomniaccia-dev.com/facilities/1037/accessprofiles`,
+      {
+        headers: {
+          accept: "application/json",
+          Authorization: "Bearer " + bearerToken.access_token, // Ensure this token is correct
+          "api-version": "2.0",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      throw new Error("Data is not an array");
+    }
+    accessProfiles = data;
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+  }
+}
+
 // Function to create a bearer token for authentication
 async function createBearer(user, pass, id, secret) {
   currentTime = Date.now();
@@ -117,6 +200,7 @@ function showError(err) {
   console.log(err);
   errText.classList.remove("hidden");
   errText.classList.add("visible");
+  bearerButton.classList.add("pulsate");
   hideLoadingSpinner();
 }
 
@@ -413,7 +497,7 @@ async function removeUnit(unit) {
     }
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
-    alert(error.message);
+    alert("Failed to delete unit...");
     hideLoadingSpinner();
     return false;
   }
@@ -468,7 +552,7 @@ async function addVisitor(unit) {
     }
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
-    alert(error.message);
+    alert("Failed to create tenant...");
     hideLoadingSpinner();
     return false;
   }
@@ -487,19 +571,44 @@ async function addVisitorNoFill(unit) {
       "Email",
       "Mobile Phone Number",
       "Code",
+      "Access Profile",
+      "Time Profile",
     ];
     const inputs = [];
     labels.forEach((labelText) => {
       const label = document.createElement("label");
       label.textContent = labelText + ":";
-      const input = document.createElement("input");
-      input.setAttribute("type", "text");
-      input.setAttribute(
-        "placeholder",
-        "Enter " +
-        labelText.charAt(0).toLowerCase() +
-        labelText.slice(1).replace(/\s+/g, "")
-      );
+      let input;
+
+      if (labelText === "Access Profile") {
+        // Create a dropdown for Access Profile
+        input = document.createElement("select");
+        accessProfiles.forEach((profile) => {
+          const option = document.createElement("option");
+          option.value = profile.id;
+          option.textContent = profile.name;
+          input.appendChild(option);
+        });
+      } else if (labelText === "Time Profile") {
+        // Create a dropdown for Time Profile
+        input = document.createElement("select");
+        timeProfiles.forEach((profile) => {
+          const option = document.createElement("option");
+          option.value = profile.id;
+          option.textContent = profile.name;
+          input.appendChild(option);
+        });
+      } else {
+        // Create text inputs for other fields
+        input = document.createElement("input");
+        input.setAttribute("type", "text");
+        input.setAttribute(
+          "placeholder",
+          "Enter " +
+            labelText.charAt(0).toLowerCase() +
+            labelText.slice(1).replace(/\s+/g, "")
+        );
+      }
       const wrapper = document.createElement("div");
       wrapper.classList.add("input-wrapper");
       wrapper.appendChild(label);
@@ -528,6 +637,8 @@ async function addVisitorNoFill(unit) {
         inputs[2].value,
         inputs[3].value,
         inputs[4].value,
+        inputs[5].value,
+        inputs[6].value,
         unit
       );
       document.body.removeChild(popupContainer);
@@ -556,6 +667,8 @@ async function addVisitorNoFill(unit) {
       email,
       phone,
       code,
+      access,
+      time,
       unit
     ) {
       try {
@@ -570,8 +683,8 @@ async function addVisitorNoFill(unit) {
               "Content-Type": "application/json-patch+json",
             },
             body: JSON.stringify({
-              timeGroupId: 0,
-              accessProfileId: 0,
+              timeGroupId: time,
+              accessProfileId: access,
               unitId: unit,
               accessCode: code,
               lastName: lname,
@@ -598,7 +711,7 @@ async function addVisitorNoFill(unit) {
       } catch (error) {
         console.error("There was a problem with the fetch operation:", error);
         resolve("Closed");
-        alert(error.message);
+        alert("Failed to create tenant...");
         hideLoadingSpinner();
         return false;
       }
@@ -630,7 +743,7 @@ async function removeVisitor(unit) {
     }
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
-    alert(error.message);
+    alert("Failed to remove tenant...");
     hideLoadingSpinner();
     return false;
   }
@@ -661,7 +774,7 @@ async function addDelinquent(unit) {
     }
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
-    alert(error.message);
+    alert("Failed to make tenant delinquent...");
     hideLoadingSpinner();
     return false;
   }
@@ -692,7 +805,7 @@ async function removeDelinquent(unit) {
     }
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
-    alert(error.message);
+    alert("Failed to remove delinquency from tenant");
     hideLoadingSpinner();
     return false;
   }
@@ -815,7 +928,6 @@ async function sortTable(columnIndex) {
   });
 }
 
-
 // Function to disable all buttons
 function disableButtons() {
   var buttons = document.getElementsByTagName("button");
@@ -899,6 +1011,8 @@ async function onWebLoad() {
   // Display the unit table
   await new Promise((resolve) => setTimeout(resolve, 1000));
   await displayData();
+  await getAccessProfiles();
+  await getTimeProfiles();
   countTableRowsByStatus();
 
   // Hide loading spinner
@@ -966,6 +1080,9 @@ async function getVisitor(unit) {
     );
     if (response.ok) {
       const data = await response.json();
+      if (data.length == 0) {
+        alert("This unit does not contain a tenant record...");
+      }
       updateVisitor(data);
       return true;
     } else {
@@ -976,7 +1093,16 @@ async function getVisitor(unit) {
     return false;
   }
 }
-async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
+async function sendUpdateVisitor(
+  fname,
+  lname,
+  email,
+  phone,
+  code,
+  access,
+  time,
+  visitorID
+) {
   try {
     const response = await fetch(
       `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
@@ -988,7 +1114,7 @@ async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
           "api-version": "2.0",
           "Content-Type": "application/json-patch+json",
         },
-        body: `{\n  "accessCode": "${code}",\n  "lastName": "${lname}",\n  "firstName": "${fname}",\n  "email": "${email}",\n  "mobilePhoneNumber": "${phone}",\n  "suppressCommands": true\n}`,
+        body: `{\n  "timeGroupId": "${time}",\n  "accessProfileId": "${access}",\n  "accessCode": "${code}",\n  "lastName": "${lname}",\n  "firstName": "${fname}",\n  "email": "${email}",\n  "mobilePhoneNumber": "${phone}",\n  "suppressCommands": true\n}`,
       }
     );
     if (response.ok) {
@@ -1002,12 +1128,14 @@ async function sendUpdateVisitor(fname, lname, email, phone, code, visitorID) {
     }
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
+    alert("Failed to update tenant...");
     return false;
   }
 }
 
 async function updateVisitor(info) {
   if (opened) return;
+  console.log(info);
   const nameParts = info[0].name.split(" ");
   document.body.style.overflow = "hidden";
   const popupContainer = document.createElement("div");
@@ -1020,32 +1148,62 @@ async function updateVisitor(info) {
     "Email",
     "Mobile Phone Number",
     "Code",
+    "Access Profile",
+    "Time Profile",
   ];
   const inputs = [];
   labels.forEach((labelText) => {
     const label = document.createElement("label");
     label.textContent = labelText + ":";
-    const input = document.createElement("input");
-    input.setAttribute("type", "text");
-    const storedKey = labelText.replace(/\s+/g, "");
-    var storedValue =
-      info[0][
-      labelText.charAt(0).toLowerCase() +
-      labelText.slice(1).replace(/\s+/g, "")
-      ];
-    if (labelText === "FirstName") {
-      storedValue = nameParts[0];
+    let input;
+
+    // Create dropdowns for "Access Profile" and "Time Profile"
+    if (labelText === "Access Profile") {
+      input = document.createElement("select");
+      accessProfiles.forEach((profile) => {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent = profile.name;
+        if (profile.id === info[0].accessProfileId) {
+          option.selected = true;
+        }
+        input.appendChild(option);
+      });
+    } else if (labelText === "Time Profile") {
+      input = document.createElement("select");
+      timeProfiles.forEach((profile) => {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent = profile.name;
+        if (profile.id === info[0].timeGroupId) {
+          option.selected = true;
+        }
+        input.appendChild(option);
+      });
+    } else {
+      input = document.createElement("input");
+      input.setAttribute("type", "text");
+      const storedKey = labelText.replace(/\s+/g, "");
+      let storedValue =
+        info[0][
+          labelText.charAt(0).toLowerCase() +
+            labelText.slice(1).replace(/\s+/g, "")
+        ];
+      if (labelText === "FirstName") {
+        storedValue = nameParts[0];
+      }
+      if (labelText === "LastName") {
+        storedValue = nameParts[1];
+      }
+      input.setAttribute(
+        "placeholder",
+        storedValue ||
+          "Enter " +
+            labelText.charAt(0).toLowerCase() +
+            labelText.slice(1).replace(/\s+/g, "")
+      );
+      input.value = storedValue || "";
     }
-    if (labelText === "LastName") {
-      storedValue = nameParts[1];
-    }
-    input.setAttribute(
-      "placeholder",
-      storedValue ||
-      "Enter " +
-      labelText.charAt(0).toLowerCase() +
-      labelText.slice(1).replace(/\s+/g, "")
-    );
     const wrapper = document.createElement("div");
     wrapper.classList.add("input-wrapper");
     wrapper.appendChild(label);
@@ -1057,27 +1215,34 @@ async function updateVisitor(info) {
   submitButton.textContent = "Submit";
   submitButton.classList.add("submit-button");
   submitButton.addEventListener("click", function () {
-    if (inputs[0].value === "") {
-      inputs[0].value = nameParts[0];
-    }
-    if (inputs[1].value === "") {
-      inputs[1].value = nameParts[1];
-    }
-    if (inputs[2].value === "") {
-      inputs[2].value = info[0].email;
-    }
-    if (inputs[3].value === "") {
-      inputs[3].value = info[0].mobilePhoneNumber;
-    }
-    if (inputs[4].value === "") {
-      inputs[4].value = info[0].code;
+    const updatedInfo = {
+      firstName: inputs[0].value || nameParts[0],
+      lastName: inputs[1].value || nameParts[1],
+      email: inputs[2].value || info[0].email,
+      mobilePhoneNumber: inputs[3].value || info[0].mobilePhoneNumber,
+      code: inputs[4].value || info[0].code,
+      accessProfileId: inputs[5].value || info[0].accessProfileId,
+      timeGroupId: inputs[6].value || info[0].timeGroupId,
+    };
+    let isEmpty = false;
+    inputs.forEach((input) => {
+      if (input.value === "") {
+        isEmpty = true;
+        return;
+      }
+    });
+    if (isEmpty) {
+      alert("Please enter a value!");
+      return;
     }
     sendUpdateVisitor(
-      inputs[0].value,
-      inputs[1].value,
-      inputs[2].value,
-      inputs[3].value,
-      inputs[4].value,
+      updatedInfo.firstName,
+      updatedInfo.lastName,
+      updatedInfo.email,
+      updatedInfo.mobilePhoneNumber,
+      updatedInfo.code,
+      updatedInfo.accessProfileId,
+      updatedInfo.timeGroupId,
       info[0].id
     );
     document.body.removeChild(popupContainer);
@@ -1161,18 +1326,22 @@ let totalPages = 1;
 
 function displayRows() {
   const rowsPerPage = 50;
-  const table = document.getElementById('jsonTable');
-  const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+  const table = document.getElementById("jsonTable");
+  const rows = table
+    .getElementsByTagName("tbody")[0]
+    .getElementsByTagName("tr");
   totalPages = Math.ceil(rows.length / rowsPerPage);
   for (let i = 0; i < rows.length; i++) {
-    rows[i].style.display = 'none';  // Hide all rows initially
+    rows[i].style.display = "none"; // Hide all rows initially
   }
   const start = (currentPage - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   for (let i = start; i < end && i < rows.length; i++) {
-    rows[i].style.display = '';  // Show only the rows for the current page
+    rows[i].style.display = ""; // Show only the rows for the current page
   }
-  document.getElementById('pageIndicator').innerText = `${currentPage} of ${totalPages}`;
+  document.getElementById(
+    "pageIndicator"
+  ).innerText = `${currentPage} of ${totalPages}`;
 }
 
 function nextPage() {
