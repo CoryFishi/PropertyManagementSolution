@@ -40,16 +40,6 @@ if (
   bearerButton.classList.add("pulsate");
 }
 
-console.log(
-  propertyID,
-  username,
-  password,
-  clientID,
-  secretID,
-  envKey,
-  stageKey
-);
-
 /*----------------------------------------------------------------
                         Function Declarations
 ----------------------------------------------------------------*/
@@ -76,7 +66,6 @@ async function getTimeProfiles() {
       throw new Error("Data is not an array");
     }
     timeProfiles = data;
-    console.log(data);
     return data;
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
@@ -106,7 +95,6 @@ async function getAccessProfiles() {
       throw new Error("Data is not an array");
     }
     accessProfiles = data;
-    console.log(data);
     return data;
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);

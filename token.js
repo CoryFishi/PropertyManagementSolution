@@ -3,8 +3,9 @@ var opened = false;
 
 if (!localStorage.getItem("environment")) {
   localStorage.setItem("environment", "");
-  console.log(localStorage.getItem("environment"));
 }
+
+savedFacilities = [];
 
 // Event listener for bearerButton click
 document.getElementById("bearerButton").addEventListener("click", function () {
@@ -47,6 +48,7 @@ document.getElementById("bearerButton").addEventListener("click", function () {
       "placeholder",
       storedValue || "Enter " + labelText.toLowerCase().replace(/\s+/g, " ")
     );
+    input.setAttribute("id", labelText.toLowerCase().replace(/\s+/g, "_"));
     const wrapper = document.createElement("div");
     wrapper.classList.add("input-wrapper");
     wrapper.appendChild(label);
@@ -93,63 +95,90 @@ document.getElementById("bearerButton").addEventListener("click", function () {
     location.reload();
   });
 
+  // Create save button
+  const saveButton = document.createElement("button");
+  saveButton.textContent = "Save";
+  saveButton.classList.add("save-button");
+  saveButton.addEventListener("click", function () {
+    const idValue = document.getElementById("property_id").value.trim();
+    const authKeyValue = document
+      .getElementById("authorization_key")
+      .value.trim();
+    const authSecretValue = document
+      .getElementById("authorization_secret")
+      .value.trim();
+    const clientIdValue = document.getElementById("client_id").value.trim();
+    const clientSecretValue = document
+      .getElementById("client_secret")
+      .value.trim();
+
+    if (
+      idValue &&
+      authKeyValue &&
+      authSecretValue &&
+      clientIdValue &&
+      clientSecretValue
+    ) {
+      let savedFacilities = getObjectArrayFromLocalStorage();
+      savedFacilities.push({
+        property_id: idValue,
+        username: authKeyValue,
+        password: authSecretValue,
+        client_id: clientIdValue,
+        secret_id: clientSecretValue,
+        value: idValue,
+      });
+      localStorage.setItem("property_id", idValue);
+      localStorage.setItem("client_id", clientIdValue);
+      localStorage.setItem("secret_id", clientSecretValue);
+      localStorage.setItem("username", authKeyValue);
+      localStorage.setItem("password", authSecretValue);
+      saveObjectArrayToLocalStorage(savedFacilities);
+      updateDropdownOptions();
+    }
+  });
+
   // Create saved facilities dropdown
   const savedWrapper = document.createElement("div");
   const savedLabel = document.createElement("label");
-  savedLabel.textContent = "Saved Facilities: (currently disabled)";
+  savedLabel.textContent = "Saved Facilities:";
   savedWrapper.appendChild(savedLabel);
+
   const selectButton = document.createElement("select");
   selectButton.classList.add("select-button");
-  var options = [
-    { value: "", text: "Select" },
-    { value: "option1", text: "option1" },
-    { value: "option2", text: "option2" },
-    { value: "option3", text: "option3" },
-  ];
-  options.forEach(function (option) {
-    var optionElement = document.createElement("option");
-    optionElement.value = option.value;
-    optionElement.text = option.text;
-    selectButton.appendChild(optionElement);
-  });
+  selectButton.id = "droppy";
   savedWrapper.appendChild(selectButton);
+  var optionElement = document.createElement("option");
+  optionElement.value = null;
+  optionElement.text = "-";
+  selectButton.appendChild(optionElement);
+
+  setTimeout(function () {
+    updateDropdownOptions();
+  }, 500);
+
+  // Event listener for dropdown selection changes
   selectButton.addEventListener("change", function (event) {
-    var selectedOption = event.target.value;
-    switch (selectedOption) {
-      // Set values based on selected facility
-      case "option1":
-        localStorage.setItem("environment", "");
-        localStorage.setItem("property_id", "");
-        localStorage.setItem("client_id", "");
-        localStorage.setItem("secret_id", "");
-        localStorage.setItem("username", "");
-        localStorage.setItem("password", "");
-        localStorage.setItem("stageKey", "");
-        opened = false;
-        location.reload();
-        break;
-      case "option2":
-        localStorage.setItem("environment", "");
-        localStorage.setItem("property_id", "");
-        localStorage.setItem("client_id", "");
-        localStorage.setItem("secret_id", "");
-        localStorage.setItem("username", "");
-        localStorage.setItem("password", "");
-        localStorage.setItem("stageKey", "");
-        opened = false;
-        location.reload();
-        break;
-      case "option3":
-        localStorage.setItem("environment", "");
-        localStorage.setItem("property_id", "");
-        localStorage.setItem("client_id", "");
-        localStorage.setItem("secret_id", "");
-        localStorage.setItem("username", "");
-        localStorage.setItem("password", "");
-        localStorage.setItem("stageKey", "");
-        opened = false;
-        location.reload();
-        break;
+    const selectedValue = event.target.value;
+    const selectedFacility = getObjectArrayFromLocalStorage().find(
+      (facility) => facility.value === selectedValue
+    );
+    if (selectedFacility) {
+      localStorage.setItem("property_id", selectedFacility.property_id);
+      localStorage.setItem("client_id", selectedFacility.client_id);
+      localStorage.setItem("secret_id", selectedFacility.secret_id);
+      localStorage.setItem("username", selectedFacility.username);
+      localStorage.setItem("password", selectedFacility.password);
+      opened = false;
+      location.reload();
+    } else {
+      localStorage.setItem("property_id", "");
+      localStorage.setItem("client_id", "");
+      localStorage.setItem("secret_id", "");
+      localStorage.setItem("username", "");
+      localStorage.setItem("password", "");
+      opened = false;
+      location.reload();
     }
   });
 
@@ -231,7 +260,31 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   popupContainer.appendChild(closeButton);
   popupContainer.appendChild(submitButton);
   popupContainer.appendChild(clearButton);
+  popupContainer.appendChild(saveButton);
   popupContainer.appendChild(savedWrapper);
   popupContainer.appendChild(envWrapper);
   document.body.appendChild(popupContainer);
+
+  // Function to update the dropdown options
+  function updateDropdownOptions() {
+    const selectyButton = document.getElementById("droppy");
+    const options = getObjectArrayFromLocalStorage();
+    options.forEach(function (option) {
+      var optionElement = document.createElement("option");
+      optionElement.value = option.value;
+      optionElement.text = option.value;
+      selectyButton.appendChild(optionElement);
+    });
+  }
+
+  // Function to get the array of objects from localStorage or return an empty array if not present
+  function getObjectArrayFromLocalStorage() {
+    let array = localStorage.getItem("savedFacilities");
+    return array ? JSON.parse(array) : [];
+  }
+
+  // Function to save the array of objects back to localStorage
+  function saveObjectArrayToLocalStorage(array) {
+    localStorage.setItem("savedFacilities", JSON.stringify(array));
+  }
 });

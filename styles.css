@@ -167,6 +167,11 @@ select {
   margin-bottom: 10px;
 }
 
+.save-button {
+  margin-left: 36%;
+  margin-right: 0;
+}
+
 .select-button {
   padding: 8px;
   border: 1px solid var(--table-border);
@@ -371,6 +376,9 @@ input:checked + .slider:before {
 @media screen and (max-width: 900px) {
   .hide-column {
     display: none;
+  }
+  .save-button {
+    margin-left: 0;
   }
 }
 @media screen and (max-width: 1200px) {
