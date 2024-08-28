@@ -43,11 +43,245 @@ if (
 /*----------------------------------------------------------------
                         Function Declarations
 ----------------------------------------------------------------*/
+
+// Get SmartLock info
+async function getSmartLock() {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
+      {
+        headers: {
+          Authorization: "Bearer " + (await bearerToken.access_token),
+          accept: "application/json",
+          "api-version": "2.0",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      if (data.length == 0) {
+        alert("This unit does not contain a tenant record...");
+      }
+      updateVisitor(data);
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    return false;
+  }
+}
+
+// Get tenant info
+async function getVisitor(unit) {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
+      {
+        headers: {
+          Authorization: "Bearer " + (await bearerToken.access_token),
+          accept: "application/json",
+          "api-version": "2.0",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      if (data.length == 0) {
+        alert("This unit does not contain a tenant record...");
+      }
+      updateVisitor(data);
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    return false;
+  }
+}
+
+// API Call to send tenant update
+async function sendUpdateVisitor(
+  fname,
+  lname,
+  email,
+  phone,
+  code,
+  access,
+  time,
+  visitorID
+) {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + (await bearerToken.access_token),
+          accept: "application/json",
+          "api-version": "2.0",
+          "Content-Type": "application/json-patch+json",
+        },
+        body: `{\n  "timeGroupId": "${time}",\n  "accessProfileId": "${access}",\n  "accessCode": "${code}",\n  "lastName": "${lname}",\n  "firstName": "${fname}",\n  "email": "${email}",\n  "mobilePhoneNumber": "${phone}",\n  "suppressCommands": true\n}`,
+      }
+    );
+    if (response.ok) {
+      console.log(response);
+      const data = await response.json();
+      console.log(data);
+      return true;
+    } else {
+      console.log(response);
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    alert("Failed to update tenant...");
+    return false;
+  }
+}
+
+// Update Tenant Info
+async function updateVisitor(info) {
+  if (opened) return;
+  console.log(info);
+  const nameParts = info[0].name.split(" ");
+  document.body.style.overflow = "hidden";
+  const popupContainer = document.createElement("div");
+  popupContainer.classList.add("popup-container");
+  disableButtons();
+  opened = true;
+  const labels = [
+    "FirstName",
+    "LastName",
+    "Email",
+    "Mobile Phone Number",
+    "Code",
+    "Access Profile",
+    "Time Profile",
+  ];
+  const inputs = [];
+  labels.forEach((labelText) => {
+    const label = document.createElement("label");
+    label.textContent = labelText + ":";
+    let input;
+
+    // Create dropdowns for "Access Profile" and "Time Profile"
+    if (labelText === "Access Profile") {
+      input = document.createElement("select");
+      accessProfiles.forEach((profile) => {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent = profile.name;
+        if (profile.id === info[0].accessProfileId) {
+          option.selected = true;
+        }
+        input.appendChild(option);
+      });
+    } else if (labelText === "Time Profile") {
+      input = document.createElement("select");
+      timeProfiles.forEach((profile) => {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent = profile.name;
+        if (profile.id === info[0].timeGroupId) {
+          option.selected = true;
+        }
+        input.appendChild(option);
+      });
+    } else {
+      input = document.createElement("input");
+      input.setAttribute("type", "text");
+      const storedKey = labelText.replace(/\s+/g, "");
+      let storedValue =
+        info[0][
+          labelText.charAt(0).toLowerCase() +
+            labelText.slice(1).replace(/\s+/g, "")
+        ];
+      if (labelText === "FirstName") {
+        storedValue = nameParts[0];
+      }
+      if (labelText === "LastName") {
+        storedValue = nameParts[1];
+      }
+      input.setAttribute(
+        "placeholder",
+        storedValue ||
+          "Enter " +
+            labelText.charAt(0).toLowerCase() +
+            labelText.slice(1).replace(/\s+/g, "")
+      );
+      input.value = storedValue || "";
+    }
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("input-wrapper");
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+    inputs.push(input);
+    popupContainer.appendChild(wrapper);
+  });
+  const submitButton = document.createElement("button");
+  submitButton.textContent = "Submit";
+  submitButton.classList.add("submit-button");
+  submitButton.addEventListener("click", function () {
+    const updatedInfo = {
+      firstName: inputs[0].value || nameParts[0],
+      lastName: inputs[1].value || nameParts[1],
+      email: inputs[2].value || info[0].email,
+      mobilePhoneNumber: inputs[3].value || info[0].mobilePhoneNumber,
+      code: inputs[4].value || info[0].code,
+      accessProfileId: inputs[5].value || info[0].accessProfileId,
+      timeGroupId: inputs[6].value || info[0].timeGroupId,
+    };
+    let isEmpty = false;
+    inputs.forEach((input) => {
+      if (input.value === "") {
+        isEmpty = true;
+        return;
+      }
+    });
+    if (isEmpty) {
+      alert("Please enter a value!");
+      return;
+    }
+    sendUpdateVisitor(
+      updatedInfo.firstName,
+      updatedInfo.lastName,
+      updatedInfo.email,
+      updatedInfo.mobilePhoneNumber,
+      updatedInfo.code,
+      updatedInfo.accessProfileId,
+      updatedInfo.timeGroupId,
+      info[0].id
+    );
+    document.body.removeChild(popupContainer);
+    opened = false;
+    enableButtons();
+    document.body.style.overflow = "";
+  });
+  // Create close button
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "X";
+  closeButton.classList.add("close-button");
+  closeButton.addEventListener("click", function () {
+    opened = false;
+    enableButtons();
+    document.body.removeChild(popupContainer);
+    document.body.style.overflow = "";
+  });
+  // Append elements to popup container
+  popupContainer.appendChild(closeButton);
+  popupContainer.appendChild(submitButton);
+  document.body.appendChild(popupContainer);
+}
+
 // Function to get facility time profiles
 async function getTimeProfiles() {
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia-dev.com/facilities/1037/timegroups`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/timegroups`,
       {
         headers: {
           accept: "application/json",
@@ -76,7 +310,7 @@ async function getTimeProfiles() {
 async function getAccessProfiles() {
   try {
     const response = await fetch(
-      `https://accesscontrol.insomniaccia-dev.com/facilities/1037/accessprofiles`,
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/accessprofiles`,
       {
         headers: {
           accept: "application/json",
@@ -966,6 +1200,137 @@ async function refreshTable() {
   }, 1005);
 }
 
+//
+//
+// DarkMode
+//
+//
+let darkMode = localStorage.getItem("darkMode");
+const darkModeToggle = document.querySelector("#darkModeToggle");
+const enableDarkMode = () => {
+  document.body.classList.add("darkmode");
+  localStorage.setItem("darkMode", "enabled");
+};
+const disableDarkMode = () => {
+  document.body.classList.remove("darkmode");
+  localStorage.setItem("darkMode", null);
+};
+darkModeToggle.checked = darkMode === "enabled";
+darkModeToggle.addEventListener("change", () => {
+  checkDarkMode();
+});
+function checkDarkMode() {
+  if (darkModeToggle.checked) {
+    enableDarkMode();
+  } else {
+    disableDarkMode();
+  }
+}
+checkDarkMode();
+//
+//
+// Tenant Information Autofill Toggle
+//
+//
+let autofillMode = localStorage.getItem("autofillMode");
+const autofillToggle = document.querySelector("#autofillCheckbox");
+const enableAutofillMode = () => {
+  localStorage.setItem("autofillMode", "enabled");
+};
+const disableAutofillMode = () => {
+  localStorage.setItem("autofillMode", null);
+};
+autofillToggle.checked = autofillMode === "enabled";
+autofillToggle.addEventListener("change", () => {
+  checkAutofillMode();
+});
+function checkAutofillMode() {
+  if (autofillToggle.checked) {
+    enableAutofillMode();
+  } else {
+    disableAutofillMode();
+  }
+}
+
+function countTableRowsByStatus() {
+  var table = document.getElementById("jsonTable");
+  const rented = document.getElementById("rented");
+  const delinquent = document.getElementById("delinquent");
+  const vacant = document.getElementById("vacant");
+  const total = document.getElementById("total");
+  var rentedCount = 0;
+  var delinquentCount = 0;
+  var vacantCount = 0;
+
+  for (var i = 1; i < table.rows.length; i++) {
+    var statusCell = table.rows[i].getElementsByTagName("TD")[2];
+    var status = statusCell.textContent.trim().toLowerCase(); // Assuming the status is stored in a <td> element
+
+    if (status === "rented") {
+      rentedCount++;
+    } else if (status === "delinquent") {
+      delinquentCount++;
+    } else if (status === "vacant") {
+      vacantCount++;
+    }
+  }
+  rented.textContent = rentedCount;
+  delinquent.textContent = delinquentCount;
+  vacant.textContent = vacantCount;
+  total.textContent = vacantCount + delinquentCount + rentedCount;
+  // console.log("Rented: " + rentedCount);
+  // console.log("Delinquent: " + delinquentCount);
+  // console.log("Vacant: " + vacantCount);
+}
+
+//
+//
+// Pagination
+//
+//
+let currentPage = 1;
+let totalPages = 1;
+
+function displayRows() {
+  const rowsPerPage = 50;
+  const table = document.getElementById("jsonTable");
+  const rows = table
+    .getElementsByTagName("tbody")[0]
+    .getElementsByTagName("tr");
+  totalPages = Math.ceil(rows.length / rowsPerPage);
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].style.display = "none"; // Hide all rows initially
+  }
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  for (let i = start; i < end && i < rows.length; i++) {
+    rows[i].style.display = ""; // Show only the rows for the current page
+  }
+  document.getElementById(
+    "pageIndicator"
+  ).innerText = `${currentPage} of ${totalPages}`;
+}
+
+function nextPage() {
+  if (currentPage < totalPages) {
+    currentPage++;
+    displayRows();
+  }
+}
+
+function previousPage() {
+  if (currentPage > 1) {
+    currentPage--;
+    displayRows();
+  }
+}
+
+//
+//
+//
+//
+//
+
 // Function to show loading spinner
 function showLoadingSpinner() {
   const spinner = document.getElementById("loading-spinner");
@@ -1023,325 +1388,3 @@ onWebLoad();
 setTimeout(() => {
   location.reload();
 }, 1800000);
-
-function countTableRowsByStatus() {
-  var table = document.getElementById("jsonTable");
-  const rented = document.getElementById("rented");
-  const delinquent = document.getElementById("delinquent");
-  const vacant = document.getElementById("vacant");
-  const total = document.getElementById("total");
-  var rentedCount = 0;
-  var delinquentCount = 0;
-  var vacantCount = 0;
-
-  for (var i = 1; i < table.rows.length; i++) {
-    var statusCell = table.rows[i].getElementsByTagName("TD")[2];
-    var status = statusCell.textContent.trim().toLowerCase(); // Assuming the status is stored in a <td> element
-
-    if (status === "rented") {
-      rentedCount++;
-    } else if (status === "delinquent") {
-      delinquentCount++;
-    } else if (status === "vacant") {
-      vacantCount++;
-    }
-  }
-  rented.textContent = rentedCount;
-  delinquent.textContent = delinquentCount;
-  vacant.textContent = vacantCount;
-  total.textContent = vacantCount + delinquentCount + rentedCount;
-  // console.log("Rented: " + rentedCount);
-  // console.log("Delinquent: " + delinquentCount);
-  // console.log("Vacant: " + vacantCount);
-}
-async function getVisitor(unit) {
-  try {
-    const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
-      {
-        headers: {
-          Authorization: "Bearer " + (await bearerToken.access_token),
-          accept: "application/json",
-          "api-version": "2.0",
-        },
-      }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      if (data.length == 0) {
-        alert("This unit does not contain a tenant record...");
-      }
-      updateVisitor(data);
-      return true;
-    } else {
-      throw new Error("Network response was not ok");
-    }
-  } catch (error) {
-    console.error("There was a problem with the fetch operation:", error);
-    return false;
-  }
-}
-async function sendUpdateVisitor(
-  fname,
-  lname,
-  email,
-  phone,
-  code,
-  access,
-  time,
-  visitorID
-) {
-  try {
-    const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + (await bearerToken.access_token),
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
-        body: `{\n  "timeGroupId": "${time}",\n  "accessProfileId": "${access}",\n  "accessCode": "${code}",\n  "lastName": "${lname}",\n  "firstName": "${fname}",\n  "email": "${email}",\n  "mobilePhoneNumber": "${phone}",\n  "suppressCommands": true\n}`,
-      }
-    );
-    if (response.ok) {
-      console.log(response);
-      const data = await response.json();
-      console.log(data);
-      return true;
-    } else {
-      console.log(response);
-      throw new Error("Network response was not ok");
-    }
-  } catch (error) {
-    console.error("There was a problem with the fetch operation:", error);
-    alert("Failed to update tenant...");
-    return false;
-  }
-}
-
-async function updateVisitor(info) {
-  if (opened) return;
-  console.log(info);
-  const nameParts = info[0].name.split(" ");
-  document.body.style.overflow = "hidden";
-  const popupContainer = document.createElement("div");
-  popupContainer.classList.add("popup-container");
-  disableButtons();
-  opened = true;
-  const labels = [
-    "FirstName",
-    "LastName",
-    "Email",
-    "Mobile Phone Number",
-    "Code",
-    "Access Profile",
-    "Time Profile",
-  ];
-  const inputs = [];
-  labels.forEach((labelText) => {
-    const label = document.createElement("label");
-    label.textContent = labelText + ":";
-    let input;
-
-    // Create dropdowns for "Access Profile" and "Time Profile"
-    if (labelText === "Access Profile") {
-      input = document.createElement("select");
-      accessProfiles.forEach((profile) => {
-        const option = document.createElement("option");
-        option.value = profile.id;
-        option.textContent = profile.name;
-        if (profile.id === info[0].accessProfileId) {
-          option.selected = true;
-        }
-        input.appendChild(option);
-      });
-    } else if (labelText === "Time Profile") {
-      input = document.createElement("select");
-      timeProfiles.forEach((profile) => {
-        const option = document.createElement("option");
-        option.value = profile.id;
-        option.textContent = profile.name;
-        if (profile.id === info[0].timeGroupId) {
-          option.selected = true;
-        }
-        input.appendChild(option);
-      });
-    } else {
-      input = document.createElement("input");
-      input.setAttribute("type", "text");
-      const storedKey = labelText.replace(/\s+/g, "");
-      let storedValue =
-        info[0][
-          labelText.charAt(0).toLowerCase() +
-            labelText.slice(1).replace(/\s+/g, "")
-        ];
-      if (labelText === "FirstName") {
-        storedValue = nameParts[0];
-      }
-      if (labelText === "LastName") {
-        storedValue = nameParts[1];
-      }
-      input.setAttribute(
-        "placeholder",
-        storedValue ||
-          "Enter " +
-            labelText.charAt(0).toLowerCase() +
-            labelText.slice(1).replace(/\s+/g, "")
-      );
-      input.value = storedValue || "";
-    }
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("input-wrapper");
-    wrapper.appendChild(label);
-    wrapper.appendChild(input);
-    inputs.push(input);
-    popupContainer.appendChild(wrapper);
-  });
-  const submitButton = document.createElement("button");
-  submitButton.textContent = "Submit";
-  submitButton.classList.add("submit-button");
-  submitButton.addEventListener("click", function () {
-    const updatedInfo = {
-      firstName: inputs[0].value || nameParts[0],
-      lastName: inputs[1].value || nameParts[1],
-      email: inputs[2].value || info[0].email,
-      mobilePhoneNumber: inputs[3].value || info[0].mobilePhoneNumber,
-      code: inputs[4].value || info[0].code,
-      accessProfileId: inputs[5].value || info[0].accessProfileId,
-      timeGroupId: inputs[6].value || info[0].timeGroupId,
-    };
-    let isEmpty = false;
-    inputs.forEach((input) => {
-      if (input.value === "") {
-        isEmpty = true;
-        return;
-      }
-    });
-    if (isEmpty) {
-      alert("Please enter a value!");
-      return;
-    }
-    sendUpdateVisitor(
-      updatedInfo.firstName,
-      updatedInfo.lastName,
-      updatedInfo.email,
-      updatedInfo.mobilePhoneNumber,
-      updatedInfo.code,
-      updatedInfo.accessProfileId,
-      updatedInfo.timeGroupId,
-      info[0].id
-    );
-    document.body.removeChild(popupContainer);
-    opened = false;
-    enableButtons();
-    document.body.style.overflow = "";
-  });
-  // Create close button
-  const closeButton = document.createElement("button");
-  closeButton.textContent = "X";
-  closeButton.classList.add("close-button");
-  closeButton.addEventListener("click", function () {
-    opened = false;
-    enableButtons();
-    document.body.removeChild(popupContainer);
-    document.body.style.overflow = "";
-  });
-  // Append elements to popup container
-  popupContainer.appendChild(closeButton);
-  popupContainer.appendChild(submitButton);
-  document.body.appendChild(popupContainer);
-}
-//
-//
-// DarkMode
-//
-//
-let darkMode = localStorage.getItem("darkMode");
-const darkModeToggle = document.querySelector("#darkModeToggle");
-const enableDarkMode = () => {
-  document.body.classList.add("darkmode");
-  localStorage.setItem("darkMode", "enabled");
-};
-const disableDarkMode = () => {
-  document.body.classList.remove("darkmode");
-  localStorage.setItem("darkMode", null);
-};
-darkModeToggle.checked = darkMode === "enabled";
-darkModeToggle.addEventListener("change", () => {
-  checkDarkMode();
-});
-function checkDarkMode() {
-  if (darkModeToggle.checked) {
-    enableDarkMode();
-  } else {
-    disableDarkMode();
-  }
-}
-checkDarkMode();
-//
-//
-// Tenant Information Autofill Toggle
-//
-//
-let autofillMode = localStorage.getItem("autofillMode");
-const autofillToggle = document.querySelector("#autofillCheckbox");
-const enableAutofillMode = () => {
-  localStorage.setItem("autofillMode", "enabled");
-};
-const disableAutofillMode = () => {
-  localStorage.setItem("autofillMode", null);
-};
-autofillToggle.checked = autofillMode === "enabled";
-autofillToggle.addEventListener("change", () => {
-  checkAutofillMode();
-});
-function checkAutofillMode() {
-  if (autofillToggle.checked) {
-    enableAutofillMode();
-  } else {
-    disableAutofillMode();
-  }
-}
-//
-//
-// Pagination
-//
-//
-let currentPage = 1;
-let totalPages = 1;
-
-function displayRows() {
-  const rowsPerPage = 50;
-  const table = document.getElementById("jsonTable");
-  const rows = table
-    .getElementsByTagName("tbody")[0]
-    .getElementsByTagName("tr");
-  totalPages = Math.ceil(rows.length / rowsPerPage);
-  for (let i = 0; i < rows.length; i++) {
-    rows[i].style.display = "none"; // Hide all rows initially
-  }
-  const start = (currentPage - 1) * rowsPerPage;
-  const end = start + rowsPerPage;
-  for (let i = start; i < end && i < rows.length; i++) {
-    rows[i].style.display = ""; // Show only the rows for the current page
-  }
-  document.getElementById(
-    "pageIndicator"
-  ).innerText = `${currentPage} of ${totalPages}`;
-}
-
-function nextPage() {
-  if (currentPage < totalPages) {
-    currentPage++;
-    displayRows();
-  }
-}
-
-function previousPage() {
-  if (currentPage > 1) {
-    currentPage--;
-    displayRows();
-  }
-}
