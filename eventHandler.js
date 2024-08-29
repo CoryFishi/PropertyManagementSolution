@@ -44,35 +44,6 @@ if (
                         Function Declarations
 ----------------------------------------------------------------*/
 
-// Get SmartLock info
-async function getSmartLock() {
-  try {
-    const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
-      {
-        headers: {
-          Authorization: "Bearer " + (await bearerToken.access_token),
-          accept: "application/json",
-          "api-version": "2.0",
-        },
-      }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      if (data.length == 0) {
-        alert("This unit does not contain a tenant record...");
-      }
-      updateVisitor(data);
-      return true;
-    } else {
-      throw new Error("Network response was not ok");
-    }
-  } catch (error) {
-    console.error("There was a problem with the fetch operation:", error);
-    return false;
-  }
-}
-
 // Get tenant info
 async function getVisitor(unit) {
   try {
