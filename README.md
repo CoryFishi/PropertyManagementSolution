@@ -27,7 +27,7 @@ Currently in use by the OpenTech QA Team.
 
 ## Features
 
-- **Authorization:** The Authorization pop up located in the top right of screen allows for the user to select saved facilities (Currently hard coded) or update it manually given the correct credentials within 4 different environments.
+- **Authorization:** The Authorization pop up located in the top right of screen allows for the user to select saved facilities or update it manually given the correct credentials within 4 different environments.
 <p align="center"><img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWJqbGl2bmd4ODR1ZHAzOTJrd2IzaHRmNzN2dDVmZjBwdDE5M3ZyYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/towZbt81RjQmfd8KRf/giphy.gif" alt="Authorization GIF"></p>
 
 - **Adding units:** The unit pop up located in the top right of the screen allows for the user to input 1 or more units into the website to import in the the selected facility. This includes a success/error handling system that reports shortly after.
