@@ -59,11 +59,6 @@ button:hover,
   background-color: var(--btn-green-hover);
 }
 
-.delete-button,
-.out-button {
-  background-color: var(--btn-red);
-}
-
 .delete-button:hover,
 .out-button:hover,
 .clear-button:hover,
@@ -492,6 +487,12 @@ tr:nth-child(even) {
 #jsonTable {
   width: 98%;
   margin-left: 1%;
+}
+
+.delete-button,
+.delete-btn,
+.out-button {
+  background-color: var(--btn-red);
 }
 
 .righty {
