@@ -44,6 +44,525 @@ if (
                         Function Declarations
 ----------------------------------------------------------------*/
 
+// Remove Guest Visitor
+async function removeGuestVisitor(visitor) {
+  showLoadingSpinner();
+  try {
+    const response = await fetch(
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitor}/remove?suppressCommands=false`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-version": "2.0",
+          Authorization: "Bearer " + bearerToken.access_token,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: "",
+      }
+    );
+    if (response.ok) {
+      hideLoadingSpinner();
+      return true;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    alert("Failed to remove tenant...");
+    hideLoadingSpinner();
+    return false;
+  }
+}
+
+// Visitor Dashboard
+async function visitorDashboard(unit) {
+  let guestAutofillMode = localStorage.getItem("guestAutofillMode");
+  var visitors = await getAllVisitors(unit);
+  if (visitors.length == 0) {
+    alert("This unit does not contain a tenant record...");
+    return;
+  }
+  console.log(visitors);
+
+  const popupContainer = document.createElement("div");
+  popupContainer.classList.add("visitors-popup-container");
+
+  const visitorsTopContainer = document.createElement("div");
+  visitorsTopContainer.classList.add("visitors-top-container");
+
+  const visitorsToal = document.createElement("h3");
+  visitorsToal.innerText = `${visitors.length} Visitors`;
+
+  const rightContainer = document.createElement("div");
+  rightContainer.classList.add("righty");
+
+  const autoFillContainer = document.createElement("div");
+  autoFillContainer.innerHTML = `
+          <label for="autofillCheckboxModal" class="checkbox-label"
+            >Visitor Autofill:</label
+          >
+          <div>
+            <label class="switch">
+              <input type="checkbox" id="autofillCheckboxModal" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        `;
+  autoFillContainer.classList.add("checkbox-container");
+
+  const addVisitor = document.createElement("button");
+  addVisitor.innerText = `Add Visitor`;
+
+  addVisitor.onclick = async function () {
+    checkGuestAutofillMode();
+    console.log(localStorage.getItem("guestAutofillMode"));
+    const guest = await createGuestVisitor(
+      unit,
+      localStorage.getItem("guestAutofillMode")
+    ); // Get the new guest
+    console.log(guest);
+
+    visitors.push(guest); // Add the new guest to the visitors array
+
+    if (guest) {
+      // Create a new row for the newly added guest and append it to the tbody
+      const newRow = document.createElement("tr");
+
+      headers.forEach((header) => {
+        const td = document.createElement("td");
+        switch (header) {
+          case "Id":
+            td.textContent = guest.id;
+            break;
+          case "Unit Number":
+            td.textContent = guest.unitNumber;
+            break;
+          case "Name":
+            td.textContent = guest.name;
+            break;
+          case "isTenant":
+            td.textContent = guest.isTenant ? "True" : "False";
+            break;
+          case "Time Group":
+            td.textContent = guest.timeGroupName;
+            break;
+          case "Access Profile":
+            td.textContent = guest.accessProfileName;
+            break;
+          case "Code":
+            td.textContent = guest.code;
+            break;
+          case "Email":
+            td.textContent = guest.email;
+            break;
+          case "Phone":
+            td.textContent = guest.mobilePhoneNumber;
+            break;
+          case "Actions":
+            const editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.classList.add("edit-btn");
+            editButton.onclick = function () {
+              alert("Not yet available.");
+            };
+            td.appendChild(editButton);
+
+            if (!guest.isTenant) {
+              const deleteButton = document.createElement("button");
+              deleteButton.textContent = "Delete";
+              deleteButton.classList.add("delete-btn");
+              deleteButton.onclick = async function () {
+                const response = await removeGuestVisitor(guest.id);
+                if (response === true) {
+                  newRow.remove(); // Remove the row on successful deletion
+                } else {
+                  console.error("Network request failed:", response.statusText);
+                }
+              };
+              td.appendChild(deleteButton);
+            }
+            break;
+          default:
+            td.textContent = "";
+            break;
+        }
+        newRow.appendChild(td);
+      });
+
+      tbody.appendChild(newRow);
+    }
+
+    hideLoadingSpinner();
+  };
+
+  rightContainer.appendChild(autoFillContainer);
+  rightContainer.appendChild(addVisitor);
+
+  visitorsTopContainer.appendChild(visitorsToal);
+  visitorsTopContainer.appendChild(rightContainer);
+
+  popupContainer.appendChild(visitorsTopContainer);
+
+  const tableContainer = document.createElement("div");
+  tableContainer.classList.add("table-container");
+
+  const visitorsTable = document.createElement("table");
+  visitorsTable.className = "visitors-table";
+
+  const headers = [
+    "Id",
+    "Unit Number",
+    "Name",
+    "isTenant",
+    "Time Group",
+    "Access Profile",
+    "Code",
+    "Email",
+    "Phone",
+    "Actions",
+  ];
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  headers.forEach((headerText) => {
+    const th = document.createElement("th");
+    th.textContent = headerText;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+
+  const tbody = document.createElement("tbody");
+  // Loop through each event in events
+  visitors.forEach((visitor) => {
+    const row = document.createElement("tr");
+
+    const date = new Date(visitor.createdOn);
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      timeZoneName: "short",
+    };
+    const readableDate = date.toLocaleDateString("en-US", options);
+
+    // Create a cell for each header and populate it with the corresponding data
+    headers.forEach((header) => {
+      const td = document.createElement("td");
+      switch (header) {
+        case "Id":
+          td.textContent = visitor.id;
+          break;
+        case "Unit Number":
+          td.textContent = visitor.unitNumber;
+          break;
+        case "Name":
+          td.textContent = visitor.name;
+          break;
+        case "isTenant":
+          if (visitor.isTenant) {
+            td.textContent = "True";
+          } else {
+            td.textContent = "False";
+          }
+          break;
+        case "Time Group":
+          td.textContent = visitor.timeGroupName;
+          break;
+        case "Access Profile":
+          td.textContent = visitor.accessProfileName;
+          break;
+        case "Code":
+          td.textContent = visitor.code;
+          break;
+        case "Email":
+          td.textContent = visitor.email;
+          break;
+        case "Phone":
+          td.textContent = visitor.mobilePhoneNumber;
+          break;
+        case "Actions":
+          const editButton = document.createElement("button");
+          editButton.textContent = "Edit";
+          editButton.classList.add("edit-btn");
+          editButton.onclick = function () {
+            alert("Not yet available");
+          };
+          td.appendChild(editButton);
+
+          if (!visitor.isTenant) {
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.classList.add("delete-btn");
+            deleteButton.onclick = function () {
+              response = removeGuestVisitor(visitor.id);
+              if (response) {
+                row.remove();
+                hideLoadingSpinner();
+              } else {
+                console.error("Network request failed:", response.statusText);
+                hideLoadingSpinner();
+              }
+            };
+            td.appendChild(deleteButton);
+          }
+
+          break;
+
+        default:
+          td.textContent = "";
+          break;
+      }
+      row.appendChild(td);
+    });
+
+    // Append the row to the tbody
+    tbody.appendChild(row);
+  });
+
+  visitorsTable.appendChild(tbody);
+  visitorsTable.appendChild(thead);
+  tableContainer.appendChild(visitorsTable);
+  popupContainer.appendChild(tableContainer);
+
+  // Create close button
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "X";
+  closeButton.classList.add("close-button");
+  closeButton.addEventListener("click", function () {
+    expanedOpened = false;
+    document.body.removeChild(popupContainer);
+    document.body.style.overflow = "";
+    enableButtons();
+  });
+
+  popupContainer.appendChild(closeButton);
+
+  document.body.appendChild(popupContainer);
+
+  //
+  //
+  // Guest Visitor Information Autofill Toggle
+  //
+  //
+  const guestAutofillToggle = document.querySelector("#autofillCheckboxModal");
+  const enableGuestAutofillMode = () => {
+    localStorage.setItem("guestAutofillMode", "enabled");
+  };
+  const disableGuestAutofillMode = () => {
+    localStorage.setItem("guestAutofillMode", null);
+  };
+  guestAutofillToggle.checked = guestAutofillMode === "enabled";
+  guestAutofillToggle.addEventListener("change", () => {
+    checkGuestAutofillMode();
+  });
+  function checkGuestAutofillMode() {
+    if (guestAutofillToggle.checked) {
+      enableGuestAutofillMode();
+    } else {
+      disableGuestAutofillMode();
+    }
+  }
+}
+
+//Add Guest Tenant
+async function createGuestVisitor(unit, autofill) {
+  return new Promise(async (resolve, reject) => {
+    showLoadingSpinner();
+
+    if (autofill === "enabled") {
+      try {
+        const response = await fetch(
+          `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+          {
+            method: "POST",
+            headers: {
+              accept: "application/json",
+              "api-version": "2.0",
+              Authorization: "Bearer " + bearerToken.access_token,
+              "Content-Type": "application/json-patch+json",
+            },
+            body: JSON.stringify({
+              timeGroupId: 0,
+              accessProfileId: 0,
+              unitId: unit,
+              accessCode: generateRandomCode(6),
+              lastName: "Tenant",
+              firstName: "Temporary",
+              email: "automations@temp.com",
+              mobilePhoneNumber: generateRandomCode(10),
+              isTenant: false,
+              extendedData: {
+                additionalProp1: null,
+                additionalProp2: null,
+                additionalProp3: null,
+              },
+              suppressCommands: true,
+            }),
+          }
+        );
+        if (response.ok) {
+          hideLoadingSpinner();
+          const data = await response.json();
+          resolve(data.visitor);
+        } else {
+          throw new Error("Network response was not ok");
+        }
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
+        alert("Failed to create tenant...");
+        hideLoadingSpinner();
+        return false;
+      }
+    } else {
+      const popupContainer = document.createElement("div");
+      popupContainer.classList.add("addGuestVisitor-popup-container");
+
+      const nameLabel = document.createElement("label");
+      nameLabel.textContent = "Name";
+      popupContainer.appendChild(nameLabel);
+      const nameInput = document.createElement("input");
+      nameInput.classList.add("textInput");
+      popupContainer.appendChild(nameInput);
+
+      const timeGroupLabel = document.createElement("label");
+      timeGroupLabel.textContent = "Time Group";
+      popupContainer.appendChild(timeGroupLabel);
+      const timeGroupInput = document.createElement("input");
+      timeGroupInput.classList.add("textInput");
+      popupContainer.appendChild(timeGroupInput);
+
+      const accessProfileLabel = document.createElement("label");
+      accessProfileLabel.textContent = "Access Profile";
+      popupContainer.appendChild(accessProfileLabel);
+      const accessProfileInput = document.createElement("input");
+      accessProfileInput.classList.add("textInput");
+      popupContainer.appendChild(accessProfileInput);
+
+      const codeLabel = document.createElement("label");
+      codeLabel.textContent = "Code";
+      popupContainer.appendChild(codeLabel);
+      const codeInput = document.createElement("input");
+      codeInput.classList.add("textInput");
+      popupContainer.appendChild(codeInput);
+
+      const emailLabel = document.createElement("label");
+      emailLabel.textContent = "Email Address";
+      popupContainer.appendChild(emailLabel);
+      const emailInput = document.createElement("input");
+      emailInput.classList.add("textInput");
+      popupContainer.appendChild(emailInput);
+
+      const phoneLabel = document.createElement("label");
+      phoneLabel.textContent = "Phone Number";
+      popupContainer.appendChild(phoneLabel);
+      const phoneInput = document.createElement("input");
+      phoneInput.classList.add("textInput");
+      popupContainer.appendChild(phoneInput);
+
+      const submitButton = document.createElement("button");
+      submitButton.textContent = "Submit";
+      popupContainer.appendChild(submitButton);
+
+      // Create close button
+      const closeButton = document.createElement("button");
+      closeButton.textContent = "X";
+      closeButton.classList.add("close-button");
+      closeButton.addEventListener("click", function () {
+        expanedOpened = false;
+        document.body.removeChild(popupContainer);
+        document.body.style.overflow = "";
+        enableButtons();
+      });
+
+      submitButton.onclick = async function () {
+        const name = nameInput.value;
+        const timeGroup = timeGroupInput.value;
+        const accessProfile = accessProfileInput.value;
+        const code = codeInput.value;
+        const email = emailInput.value;
+        const phone = phoneInput.value;
+        try {
+          const response = await fetch(
+            `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+            {
+              method: "POST",
+              headers: {
+                accept: "application/json",
+                "api-version": "2.0",
+                Authorization: "Bearer " + bearerToken.access_token,
+                "Content-Type": "application/json-patch+json",
+              },
+              body: JSON.stringify({
+                timeGroupId: timeGroup,
+                accessProfileId: accessProfile,
+                unitId: unit,
+                accessCode: code,
+                firstName: name,
+                lastName: "tenant",
+                email: email,
+                mobilePhoneNumber: phone,
+                isTenant: false,
+                extendedData: {
+                  additionalProp1: null,
+                  additionalProp2: null,
+                  additionalProp3: null,
+                },
+                suppressCommands: true,
+              }),
+            }
+          );
+          if (response.ok) {
+            hideLoadingSpinner();
+            const data = await response.json();
+            console.log(data);
+            document.body.removeChild(popupContainer);
+            resolve(data.visitor);
+          } else {
+            throw new Error("Network response was not ok");
+          }
+        } catch (error) {
+          console.error("There was a problem with the fetch operation:", error);
+          alert("Failed to create tenant...");
+          hideLoadingSpinner();
+          return false;
+        }
+      };
+
+      popupContainer.appendChild(closeButton);
+
+      document.body.appendChild(popupContainer);
+    }
+  });
+}
+
+// Get All Visitors
+async function getAllVisitors(unit) {
+  try {
+    const response = await fetch(
+      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/visitors`,
+      {
+        headers: {
+          Authorization: "Bearer " + (await bearerToken.access_token),
+          accept: "application/json",
+          "api-version": "2.0",
+        },
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    } else {
+      throw new Error("Network response was not ok");
+    }
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    return false;
+  }
+}
+
 // Get tenant info
 async function getVisitor(unit) {
   try {
@@ -117,7 +636,6 @@ async function sendUpdateVisitor(
 // Update Tenant Info
 async function updateVisitor(info) {
   if (opened) return;
-  console.log(info);
   const nameParts = info[0].name.split(" ");
   document.body.style.overflow = "hidden";
   const popupContainer = document.createElement("div");
@@ -587,7 +1105,11 @@ async function displayData() {
     prop2Cell.textContent = item.extendedData.additionalProp2;
     prop3Cell.textContent = item.extendedData.additionalProp3;
     idCell.addEventListener("click", function () {
-      getVisitor(unitNumber);
+      if (item.status != "Vacant") {
+        visitorDashboard(item.id);
+      } else {
+        alert("Unit is not rented");
+      }
     });
     var buttonCell = row.insertCell();
     buttons = [];
@@ -722,7 +1244,7 @@ async function addVisitor(unit) {
           timeGroupId: 0,
           accessProfileId: 0,
           unitId: unit,
-          accessCode: generateRandomCode(4),
+          accessCode: generateRandomCode(6),
           lastName: "Tenant",
           firstName: "Temporary",
           email: "automations@temp.com",
