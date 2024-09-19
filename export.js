@@ -12,12 +12,16 @@ function downloadCSV(csv, filename) {
 async function exportJSONToCSV(filename) {
   showLoadingSpinner();
   jsonData = await getVisitors();
-  console.log(jsonData);
+  jsonData.sort((a, b) => {
+    if (a.unitNumber === null) return -1;
+    if (b.unitNumber === null) return 1;
+    return a.unitNumber.localeCompare(b.unitNumber);
+  });
   var csv =
-    "id,unitNumber,name,code,email,mobilePhoneNumber,accessProfilePmsIdentifier,timeGroupPmsIdentifier,isLockedOut\n"; // Column headers
+    "id,unitNumber,isTenant,name,code,email,mobilePhoneNumber,accessProfilePmsIdentifier,timeGroupPmsIdentifier,isLockedOut\n"; // Column headers
   jsonData.forEach(function (row) {
-    if (row.isTenant === true) {
-      csv += `${row.id},${row.unitNumber},${row.name},${row.code},${row.email},${row.mobilePhoneNumber},${row.accessProfilePmsIdentifier},${row.timeGroupPmsIdentifier},${row.isLockedOut}\n`;
+    if (!row.isPortalVisitor) {
+      csv += `${row.id},${row.unitNumber},${row.isTenant},${row.name},${row.code},${row.email},${row.mobilePhoneNumber},${row.accessProfileName},${row.timeGroupName},${row.isLockedOut}\n`;
     }
   });
   downloadCSV(csv, filename);
