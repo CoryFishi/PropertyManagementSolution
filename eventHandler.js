@@ -83,7 +83,6 @@ async function visitorDashboard(unit) {
     alert("This unit does not contain a tenant record...");
     return;
   }
-  console.log(visitors);
 
   const popupContainer = document.createElement("div");
   popupContainer.classList.add("visitors-popup-container");
@@ -116,12 +115,10 @@ async function visitorDashboard(unit) {
 
   addVisitor.onclick = async function () {
     checkGuestAutofillMode();
-    console.log(localStorage.getItem("guestAutofillMode"));
     const guest = await createGuestVisitor(
       unit,
       localStorage.getItem("guestAutofillMode")
     ); // Get the new guest
-    console.log(guest);
 
     visitors.push(guest); // Add the new guest to the visitors array
 
@@ -236,18 +233,6 @@ async function visitorDashboard(unit) {
   visitors.forEach((visitor) => {
     const row = document.createElement("tr");
 
-    const date = new Date(visitor.createdOn);
-    const options = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      timeZoneName: "short",
-    };
-    const readableDate = date.toLocaleDateString("en-US", options);
-
     // Create a cell for each header and populate it with the corresponding data
     headers.forEach((header) => {
       const td = document.createElement("td");
@@ -336,6 +321,7 @@ async function visitorDashboard(unit) {
     document.body.removeChild(popupContainer);
     document.body.style.overflow = "";
     enableButtons();
+    hideLoadingSpinner();
   });
 
   popupContainer.appendChild(closeButton);
@@ -430,15 +416,27 @@ async function createGuestVisitor(unit, autofill) {
       const timeGroupLabel = document.createElement("label");
       timeGroupLabel.textContent = "Time Group";
       popupContainer.appendChild(timeGroupLabel);
-      const timeGroupInput = document.createElement("input");
+      const timeGroupInput = document.createElement("select");
       timeGroupInput.classList.add("textInput");
+      timeProfiles.forEach((profile) => {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent = profile.name;
+        timeGroupInput.appendChild(option);
+      });
       popupContainer.appendChild(timeGroupInput);
 
       const accessProfileLabel = document.createElement("label");
       accessProfileLabel.textContent = "Access Profile";
       popupContainer.appendChild(accessProfileLabel);
-      const accessProfileInput = document.createElement("input");
+      const accessProfileInput = document.createElement("select");
       accessProfileInput.classList.add("textInput");
+      accessProfiles.forEach((profile) => {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent = profile.name;
+        accessProfileInput.appendChild(option);
+      });
       popupContainer.appendChild(accessProfileInput);
 
       const codeLabel = document.createElement("label");
@@ -517,7 +515,6 @@ async function createGuestVisitor(unit, autofill) {
           if (response.ok) {
             hideLoadingSpinner();
             const data = await response.json();
-            console.log(data);
             document.body.removeChild(popupContainer);
             resolve(data.visitor);
           } else {
@@ -618,12 +615,9 @@ async function sendUpdateVisitor(
       }
     );
     if (response.ok) {
-      console.log(response);
       const data = await response.json();
-      console.log(data);
       return true;
     } else {
-      console.log(response);
       throw new Error("Network response was not ok");
     }
   } catch (error) {
