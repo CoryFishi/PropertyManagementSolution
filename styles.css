@@ -497,3 +497,6 @@ tr:nth-child(even) {
 .righty {
   display: flex;
 }
+.visitors-popup-container .table-container {
+  max-height: 96%;
+}

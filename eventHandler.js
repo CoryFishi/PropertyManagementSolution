@@ -75,6 +75,37 @@ async function removeGuestVisitor(visitor) {
   }
 }
 
+// Get Visitor
+async function getVisitor(visitor) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(
+        `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitor}`,
+        {
+          headers: {
+            Authorization: "Bearer " + (await bearerToken.access_token),
+            accept: "application/json",
+            "api-version": "2.0",
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.length == 0) {
+          alert("This unit does not contain a tenant record...");
+        }
+        const returnData = await updateVisitor(data);
+        resolve(returnData);
+      } else {
+        throw new Error("Network response was not ok");
+      }
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
+      return false;
+    }
+  });
+}
+
 // Visitor Dashboard
 async function visitorDashboard(unit) {
   let guestAutofillMode = localStorage.getItem("guestAutofillMode");
@@ -161,7 +192,22 @@ async function visitorDashboard(unit) {
             editButton.textContent = "Edit";
             editButton.classList.add("edit-btn");
             editButton.onclick = function () {
-              alert("Not yet available.");
+              const visitorInfo = getVisitor(guest.id);
+              console.log(visitorInfo);
+              const cells = row.querySelectorAll("td");
+              cells[0].textContent = visitorInfo.id;
+              cells[1].textContent = visitorInfo.unitNumber;
+              cells[2].textContent = visitorInfo.name;
+              cells[3].textContent = visitorInfo.isTenant ? "True" : "False";
+              cells[4].textContent = visitorInfo.timeGroupName;
+              cells[5].textContent = visitorInfo.accessProfileName;
+              cells[6].textContent = visitorInfo.code;
+              cells[7].textContent = visitorInfo.email;
+              cells[8].textContent = visitorInfo.mobilePhoneNumber;
+              const index = visitors.findIndex(
+                (visitor) => visitor.id === guest.id
+              );
+              visitors[index] = visitorInfo;
             };
             td.appendChild(editButton);
 
@@ -232,7 +278,7 @@ async function visitorDashboard(unit) {
   // Loop through each event in events
   visitors.forEach((visitor) => {
     const row = document.createElement("tr");
-
+    const id = visitor.id;
     // Create a cell for each header and populate it with the corresponding data
     headers.forEach((header) => {
       const td = document.createElement("td");
@@ -272,8 +318,20 @@ async function visitorDashboard(unit) {
           const editButton = document.createElement("button");
           editButton.textContent = "Edit";
           editButton.classList.add("edit-btn");
-          editButton.onclick = function () {
-            alert("Not yet available");
+          editButton.onclick = async function () {
+            const visitorInfo = await getVisitor(visitor.id);
+            const cells = row.querySelectorAll("td");
+            cells[0].textContent = visitorInfo.id;
+            cells[1].textContent = visitorInfo.unitNumber;
+            cells[2].textContent = visitorInfo.name;
+            cells[3].textContent = visitorInfo.isTenant ? "True" : "False";
+            cells[4].textContent = visitorInfo.timeGroupName;
+            cells[5].textContent = visitorInfo.accessProfileName;
+            cells[6].textContent = visitorInfo.code;
+            cells[7].textContent = visitorInfo.email;
+            cells[8].textContent = visitorInfo.mobilePhoneNumber;
+            const index = visitors.findIndex((visitor) => visitor.id === id);
+            visitors[index] = visitorInfo;
           };
           td.appendChild(editButton);
 
@@ -375,7 +433,7 @@ async function createGuestVisitor(unit, autofill) {
               accessProfileId: 0,
               unitId: unit,
               accessCode: generateRandomCode(6),
-              lastName: "Tenant",
+              lastName: "Guest",
               firstName: "Temporary",
               email: "automations@temp.com",
               mobilePhoneNumber: generateRandomCode(10),
@@ -499,7 +557,7 @@ async function createGuestVisitor(unit, autofill) {
                 unitId: unit,
                 accessCode: code,
                 firstName: name,
-                lastName: "tenant",
+                lastName: "Guest",
                 email: email,
                 mobilePhoneNumber: phone,
                 isTenant: false,
@@ -560,35 +618,6 @@ async function getAllVisitors(unit) {
   }
 }
 
-// Get tenant info
-async function getVisitor(unit) {
-  try {
-    const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors?unitNumber=${unit}`,
-      {
-        headers: {
-          Authorization: "Bearer " + (await bearerToken.access_token),
-          accept: "application/json",
-          "api-version": "2.0",
-        },
-      }
-    );
-    if (response.ok) {
-      const data = await response.json();
-      if (data.length == 0) {
-        alert("This unit does not contain a tenant record...");
-      }
-      updateVisitor(data);
-      return true;
-    } else {
-      throw new Error("Network response was not ok");
-    }
-  } catch (error) {
-    console.error("There was a problem with the fetch operation:", error);
-    return false;
-  }
-}
-
 // API Call to send tenant update
 async function sendUpdateVisitor(
   fname,
@@ -616,7 +645,7 @@ async function sendUpdateVisitor(
     );
     if (response.ok) {
       const data = await response.json();
-      return true;
+      return data;
     } else {
       throw new Error("Network response was not ok");
     }
@@ -629,135 +658,137 @@ async function sendUpdateVisitor(
 
 // Update Tenant Info
 async function updateVisitor(info) {
-  if (opened) return;
-  const nameParts = info[0].name.split(" ");
-  document.body.style.overflow = "hidden";
-  const popupContainer = document.createElement("div");
-  popupContainer.classList.add("popup-container");
-  disableButtons();
-  opened = true;
-  const labels = [
-    "FirstName",
-    "LastName",
-    "Email",
-    "Mobile Phone Number",
-    "Code",
-    "Access Profile",
-    "Time Profile",
-  ];
-  const inputs = [];
-  labels.forEach((labelText) => {
-    const label = document.createElement("label");
-    label.textContent = labelText + ":";
-    let input;
+  return new Promise(async (resolve, reject) => {
+    if (opened) reject;
+    const nameParts = info.name.split(" ");
+    document.body.style.overflow = "hidden";
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("popup-container");
+    disableButtons();
+    opened = true;
+    const labels = [
+      "FirstName",
+      "LastName",
+      "Email",
+      "Mobile Phone Number",
+      "Code",
+      "Access Profile",
+      "Time Profile",
+    ];
+    const inputs = [];
+    labels.forEach((labelText) => {
+      const label = document.createElement("label");
+      label.textContent = labelText + ":";
+      let input;
 
-    // Create dropdowns for "Access Profile" and "Time Profile"
-    if (labelText === "Access Profile") {
-      input = document.createElement("select");
-      accessProfiles.forEach((profile) => {
-        const option = document.createElement("option");
-        option.value = profile.id;
-        option.textContent = profile.name;
-        if (profile.id === info[0].accessProfileId) {
-          option.selected = true;
-        }
-        input.appendChild(option);
-      });
-    } else if (labelText === "Time Profile") {
-      input = document.createElement("select");
-      timeProfiles.forEach((profile) => {
-        const option = document.createElement("option");
-        option.value = profile.id;
-        option.textContent = profile.name;
-        if (profile.id === info[0].timeGroupId) {
-          option.selected = true;
-        }
-        input.appendChild(option);
-      });
-    } else {
-      input = document.createElement("input");
-      input.setAttribute("type", "text");
-      const storedKey = labelText.replace(/\s+/g, "");
-      let storedValue =
-        info[0][
-          labelText.charAt(0).toLowerCase() +
-            labelText.slice(1).replace(/\s+/g, "")
-        ];
-      if (labelText === "FirstName") {
-        storedValue = nameParts[0];
-      }
-      if (labelText === "LastName") {
-        storedValue = nameParts[1];
-      }
-      input.setAttribute(
-        "placeholder",
-        storedValue ||
-          "Enter " +
+      // Create dropdowns for "Access Profile" and "Time Profile"
+      if (labelText === "Access Profile") {
+        input = document.createElement("select");
+        accessProfiles.forEach((profile) => {
+          const option = document.createElement("option");
+          option.value = profile.id;
+          option.textContent = profile.name;
+          if (profile.id === info.accessProfileId) {
+            option.selected = true;
+          }
+          input.appendChild(option);
+        });
+      } else if (labelText === "Time Profile") {
+        input = document.createElement("select");
+        timeProfiles.forEach((profile) => {
+          const option = document.createElement("option");
+          option.value = profile.id;
+          option.textContent = profile.name;
+          if (profile.id === info.timeGroupId) {
+            option.selected = true;
+          }
+          input.appendChild(option);
+        });
+      } else {
+        input = document.createElement("input");
+        input.setAttribute("type", "text");
+        let storedValue =
+          info[
             labelText.charAt(0).toLowerCase() +
-            labelText.slice(1).replace(/\s+/g, "")
-      );
-      input.value = storedValue || "";
-    }
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("input-wrapper");
-    wrapper.appendChild(label);
-    wrapper.appendChild(input);
-    inputs.push(input);
-    popupContainer.appendChild(wrapper);
-  });
-  const submitButton = document.createElement("button");
-  submitButton.textContent = "Submit";
-  submitButton.classList.add("submit-button");
-  submitButton.addEventListener("click", function () {
-    const updatedInfo = {
-      firstName: inputs[0].value || nameParts[0],
-      lastName: inputs[1].value || nameParts[1],
-      email: inputs[2].value || info[0].email,
-      mobilePhoneNumber: inputs[3].value || info[0].mobilePhoneNumber,
-      code: inputs[4].value || info[0].code,
-      accessProfileId: inputs[5].value || info[0].accessProfileId,
-      timeGroupId: inputs[6].value || info[0].timeGroupId,
-    };
-    let isEmpty = false;
-    inputs.forEach((input) => {
-      if (input.value === "") {
-        isEmpty = true;
+              labelText.slice(1).replace(/\s+/g, "")
+          ];
+        if (labelText === "FirstName") {
+          storedValue = nameParts[0];
+        }
+        if (labelText === "LastName") {
+          storedValue = nameParts[1];
+        }
+        input.setAttribute(
+          "placeholder",
+          storedValue ||
+            "Enter " +
+              labelText.charAt(0).toLowerCase() +
+              labelText.slice(1).replace(/\s+/g, "")
+        );
+        input.value = storedValue || "";
+      }
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("input-wrapper");
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      inputs.push(input);
+      popupContainer.appendChild(wrapper);
+    });
+    const submitButton = document.createElement("button");
+    submitButton.textContent = "Submit";
+    submitButton.classList.add("submit-button");
+    submitButton.addEventListener("click", async function () {
+      const updatedInfo = {
+        firstName: inputs[0].value || nameParts[0],
+        lastName: inputs[1].value || nameParts[1],
+        email: inputs[2].value || info.email,
+        mobilePhoneNumber: inputs[3].value || info.mobilePhoneNumber,
+        code: inputs[4].value || info.code,
+        accessProfileId: inputs[5].value || info.accessProfileId,
+        timeGroupId: inputs[6].value || info.timeGroupId,
+      };
+      let isEmpty = false;
+      inputs.forEach((input) => {
+        if (input.value === "") {
+          isEmpty = true;
+          return;
+        }
+      });
+      if (isEmpty) {
+        alert("Please enter a value!");
         return;
       }
+      const updatedVisitorInfo = await sendUpdateVisitor(
+        updatedInfo.firstName,
+        updatedInfo.lastName,
+        updatedInfo.email,
+        updatedInfo.mobilePhoneNumber,
+        updatedInfo.code,
+        updatedInfo.accessProfileId,
+        updatedInfo.timeGroupId,
+        info.id
+      );
+      document.body.removeChild(popupContainer);
+      opened = false;
+      enableButtons();
+      document.body.style.overflow = "";
+      resolve(updatedVisitorInfo);
     });
-    if (isEmpty) {
-      alert("Please enter a value!");
-      return;
-    }
-    sendUpdateVisitor(
-      updatedInfo.firstName,
-      updatedInfo.lastName,
-      updatedInfo.email,
-      updatedInfo.mobilePhoneNumber,
-      updatedInfo.code,
-      updatedInfo.accessProfileId,
-      updatedInfo.timeGroupId,
-      info[0].id
-    );
-    document.body.removeChild(popupContainer);
-    opened = false;
-    enableButtons();
-    document.body.style.overflow = "";
+    // Create close button
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "X";
+    closeButton.classList.add("close-button");
+    closeButton.addEventListener("click", function () {
+      opened = false;
+      enableButtons();
+      document.body.removeChild(popupContainer);
+      document.body.style.overflow = "";
+    });
+    // Append elements to popup container
+    popupContainer.appendChild(closeButton);
+    popupContainer.appendChild(submitButton);
+    document.body.appendChild(popupContainer);
   });
-  // Create close button
-  const closeButton = document.createElement("button");
-  closeButton.textContent = "X";
-  closeButton.classList.add("close-button");
-  closeButton.addEventListener("click", function () {
-    opened = false;
-    enableButtons();
-    document.body.removeChild(popupContainer);
-    document.body.style.overflow = "";
-  });
-  // Append elements to popup container
-  popupContainer.appendChild(closeButton);
-  popupContainer.appendChild(submitButton);
-  document.body.appendChild(popupContainer);
 }
 
 // Function to get facility time profiles
@@ -1079,6 +1110,7 @@ async function displayData() {
     var row = tableBody.insertRow();
     var idCell = row.insertCell();
     idCell.textContent = item.id;
+    idCell.title = "View visitor information";
     idCell.classList.add("idCell");
     row.insertCell().textContent = item.unitNumber;
     var unitNumber = item.unitNumber;
@@ -1526,7 +1558,7 @@ document.getElementById("unitButton").addEventListener(
   async function () {
     unitImportError = [];
     unitImportSuccess = [];
-    var userInput = prompt("Unit Number(s):", "");
+    var userInput = prompt("Unit Number(s): sperated by a space", "");
     if (userInput === null) {
       return false;
     }
