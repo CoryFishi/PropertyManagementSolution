@@ -288,3 +288,164 @@ document.getElementById("bearerButton").addEventListener("click", function () {
     localStorage.setItem("savedFacilities", JSON.stringify(array));
   }
 });
+
+document.getElementById("authButton").addEventListener("click", async () => {
+  // Check if popup is already opened
+  if (opened) return false;
+  const localSavedFacilities =
+    JSON.parse(localStorage.getItem("savedFacilities")) || [];
+  console.log(localSavedFacilities);
+  // Disable scrolling on body
+  document.body.style.overflow = "hidden";
+  opened = true;
+  disableButtons();
+
+  // Create popup container
+  const popupContainer = document.createElement("div");
+  popupContainer.classList.add("new-popup-container");
+
+  // Create sub containers
+  const menuContainer = document.createElement("div");
+  menuContainer.classList.add("menu-container");
+  const contentContainer = document.createElement("div");
+  contentContainer.classList.add("content-container");
+
+  // Create button navigation
+  const applications = document.createElement("button");
+  applications.classList.add("auth-menu-button");
+  applications.textContent = "Authorization";
+  const facilities = document.createElement("button");
+  facilities.classList.add("auth-menu-button");
+  facilities.textContent = "Facilities";
+
+  menuContainer.appendChild(applications);
+  menuContainer.appendChild(facilities);
+
+  const appContainer = document.createElement("div");
+  appContainer.classList.add("app-container");
+  const appContainerSaved = document.createElement("div");
+  appContainerSaved.classList.add("app-container-saved");
+  const appContainerNew = document.createElement("div");
+  appContainerNew.classList.add("app-container-new");
+
+  localSavedFacilities.forEach((facility) => {
+    const sfContainer = document.createElement("div");
+    sfContainer.classList.add("sfContainer");
+    const apiLabel = document.createElement("label");
+    apiLabel.textContent = "API";
+    const apiSecretLabel = document.createElement("label");
+    apiSecretLabel.textContent = "API Secret";
+    const clientLabel = document.createElement("label");
+    clientLabel.textContent = "Client";
+    const clientSecretLabel = document.createElement("label");
+    clientSecretLabel.textContent = "Client Secret";
+
+    const api = document.createElement("h2");
+    api.textContent = facility.username;
+
+    sfContainer.appendChild(apiLabel);
+    sfContainer.appendChild(apiSecretLabel);
+    sfContainer.appendChild(clientLabel);
+    sfContainer.appendChild(clientSecretLabel);
+    sfContainer.appendChild(api);
+
+    appContainerSaved.appendChild(sfContainer);
+  });
+
+  const newHeader = document.createElement("h2");
+  newHeader.classList.add("newHeader");
+  newHeader.textContent = "New Authorization";
+  appContainerNew.appendChild(newHeader);
+  const fNameLabel = document.createElement("label");
+  fNameLabel.textContent = "Authorization Key:";
+  appContainerNew.appendChild(fNameLabel);
+  const fNameInput = document.createElement("input");
+  fNameInput.classList.add("textInput");
+  appContainerNew.appendChild(fNameInput);
+  const lNameLabel = document.createElement("label");
+  lNameLabel.textContent = "Authorization Secret:";
+  appContainerNew.appendChild(lNameLabel);
+  const lNameInput = document.createElement("input");
+  lNameInput.classList.add("textInput");
+  appContainerNew.appendChild(lNameInput);
+  const codeLabel = document.createElement("label");
+  codeLabel.textContent = "Client ID:";
+  appContainerNew.appendChild(codeLabel);
+  const codeInput = document.createElement("input");
+  codeInput.classList.add("textInput");
+  appContainerNew.appendChild(codeInput);
+  const emailLabel = document.createElement("label");
+  emailLabel.textContent = "Client Secret:";
+  appContainerNew.appendChild(emailLabel);
+  const emailInput = document.createElement("input");
+  emailInput.classList.add("textInput");
+  appContainerNew.appendChild(emailInput);
+  const submitButton = document.createElement("button");
+  submitButton.classList.add("guestSubmit");
+  submitButton.textContent = "Submit";
+  appContainerNew.appendChild(submitButton);
+
+  appContainer.appendChild(appContainerSaved);
+  appContainer.appendChild(appContainerNew);
+
+  const facilitiesContainer = document.createElement("div");
+  facilitiesContainer.classList.add("facilities-container");
+
+  contentContainer.appendChild(appContainer);
+
+  applications.addEventListener("click", function () {
+    contentContainer.removeChild(facilitiesContainer);
+    contentContainer.appendChild(appContainer);
+  });
+
+  facilities.addEventListener("click", function () {
+    contentContainer.removeChild(appContainer);
+    contentContainer.appendChild(facilitiesContainer);
+  });
+
+  // Create close button
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "X";
+  closeButton.classList.add("close-button");
+  closeButton.addEventListener("click", function () {
+    opened = false;
+    document.body.removeChild(popupContainer);
+    document.body.style.overflow = "";
+    enableButtons();
+  });
+
+  popupContainer.appendChild(menuContainer);
+  popupContainer.appendChild(contentContainer);
+  popupContainer.appendChild(closeButton);
+  document.body.appendChild(popupContainer);
+});
+
+document
+  .getElementById("facilityButton")
+  .addEventListener("click", async () => {
+    // Check if popup is already opened
+    if (opened) return false;
+
+    // Disable scrolling on body
+    document.body.style.overflow = "hidden";
+    opened = true;
+    disableButtons();
+
+    // Create popup container
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("popup-container");
+
+    // Create close button
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "X";
+    closeButton.classList.add("close-button");
+    closeButton.addEventListener("click", function () {
+      opened = false;
+      document.body.removeChild(popupContainer);
+      document.body.style.overflow = "";
+      enableButtons();
+    });
+
+    popupContainer.appendChild(closeButton);
+    document.body.appendChild(popupContainer);
+  });
