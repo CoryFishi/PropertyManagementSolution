@@ -12,7 +12,6 @@ function downloadCSV(csv, filename) {
 async function exportJSONToCSV(filename) {
   showLoadingSpinner();
   jsonData = await getVisitors();
-  console.log(jsonData);
   jsonData.sort((a, b) => {
     if (a.unitNumber === null) return -1;
     if (b.unitNumber === null) return 1;

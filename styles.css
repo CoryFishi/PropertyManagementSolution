@@ -1,13 +1,14 @@
 :root {
   --body-background: white;
-  --body-text: black;
-  --btn-green: #4caf50;
+  --body-text: rgb(45, 45, 45);
+  --body-text2: white;
+  --btn-green: #5fdd89;
   --btn-green-hover: #45a049;
-  --btn-red: red;
+  --btn-red: #f96767;
   --btn-red-hover: rgb(171, 0, 0);
   --btn-red-clear: #ff67677c;
   --btn-red-clear-hover: rgb(171, 0, 0);
-  --btn-yellow: yellow;
+  --btn-yellow: #ffcc00;
   --btn-yellow-hover: rgb(192, 192, 0);
   --clickable-blue: rgb(0, 149, 255);
   --clickable-blue-hover: blue;
@@ -24,7 +25,8 @@
 
 .darkmode {
   --body-background: #22272b;
-  --body-text: white;
+  --body-text: #ccd1d4;
+  --body-text2: #2c333a;
   --input-background: rgb(222, 228, 234);
   --nav-background: rgba(0, 0, 0, 0.15);
   --popup-background: #2c333a;
@@ -36,22 +38,30 @@
 
 * {
   margin: 0;
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
 body {
   background-color: var(--body-background);
   color: var(--body-text);
 }
 
+.guestSubmit {
+  margin-top: 10px;
+}
+
 button,
 .import-btn {
   padding: 8px 12px;
   background-color: var(--btn-green);
-  color: var(--text-white);
+  color: var(--body-text2);
   border: none;
   cursor: pointer;
   margin-right: 5px;
   border-radius: 4px;
   font-size: medium;
+  font-weight: bold;
 }
 
 button:hover,
@@ -68,7 +78,7 @@ button:hover,
 
 .addDelinquent-button {
   background-color: var(--btn-yellow);
-  color: var(--text-black);
+  color: var(--body-text2);
 }
 .addDelinquent-button:hover {
   background-color: var(--btn-yellow-hover);
@@ -114,6 +124,7 @@ button:hover,
   border: 2px solid var(--table-border);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   z-index: 9999;
+  border-radius: 5px;
 }
 
 .input-wrapper {
@@ -415,7 +426,7 @@ input:checked + .slider:before {
 }
 .addGuestVisitor-popup-container {
   width: 250px;
-  height: 370px;
+  height: 440px;
   position: fixed;
   top: 50%;
   left: 50%;

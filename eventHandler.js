@@ -464,12 +464,40 @@ async function createGuestVisitor(unit, autofill) {
       const popupContainer = document.createElement("div");
       popupContainer.classList.add("addGuestVisitor-popup-container");
 
-      const nameLabel = document.createElement("label");
-      nameLabel.textContent = "Name";
-      popupContainer.appendChild(nameLabel);
-      const nameInput = document.createElement("input");
-      nameInput.classList.add("textInput");
-      popupContainer.appendChild(nameInput);
+      const fNameLabel = document.createElement("label");
+      fNameLabel.textContent = "First Name";
+      popupContainer.appendChild(fNameLabel);
+      const fNameInput = document.createElement("input");
+      fNameInput.classList.add("textInput");
+      popupContainer.appendChild(fNameInput);
+
+      const lNameLabel = document.createElement("label");
+      lNameLabel.textContent = "Last Name";
+      popupContainer.appendChild(lNameLabel);
+      const lNameInput = document.createElement("input");
+      lNameInput.classList.add("textInput");
+      popupContainer.appendChild(lNameInput);
+
+      const codeLabel = document.createElement("label");
+      codeLabel.textContent = "Code";
+      popupContainer.appendChild(codeLabel);
+      const codeInput = document.createElement("input");
+      codeInput.classList.add("textInput");
+      popupContainer.appendChild(codeInput);
+
+      const emailLabel = document.createElement("label");
+      emailLabel.textContent = "Email Address";
+      popupContainer.appendChild(emailLabel);
+      const emailInput = document.createElement("input");
+      emailInput.classList.add("textInput");
+      popupContainer.appendChild(emailInput);
+
+      const phoneLabel = document.createElement("label");
+      phoneLabel.textContent = "Phone Number";
+      popupContainer.appendChild(phoneLabel);
+      const phoneInput = document.createElement("input");
+      phoneInput.classList.add("textInput");
+      popupContainer.appendChild(phoneInput);
 
       const timeGroupLabel = document.createElement("label");
       timeGroupLabel.textContent = "Time Group";
@@ -497,28 +525,8 @@ async function createGuestVisitor(unit, autofill) {
       });
       popupContainer.appendChild(accessProfileInput);
 
-      const codeLabel = document.createElement("label");
-      codeLabel.textContent = "Code";
-      popupContainer.appendChild(codeLabel);
-      const codeInput = document.createElement("input");
-      codeInput.classList.add("textInput");
-      popupContainer.appendChild(codeInput);
-
-      const emailLabel = document.createElement("label");
-      emailLabel.textContent = "Email Address";
-      popupContainer.appendChild(emailLabel);
-      const emailInput = document.createElement("input");
-      emailInput.classList.add("textInput");
-      popupContainer.appendChild(emailInput);
-
-      const phoneLabel = document.createElement("label");
-      phoneLabel.textContent = "Phone Number";
-      popupContainer.appendChild(phoneLabel);
-      const phoneInput = document.createElement("input");
-      phoneInput.classList.add("textInput");
-      popupContainer.appendChild(phoneInput);
-
       const submitButton = document.createElement("button");
+      submitButton.classList.add("guestSubmit");
       submitButton.textContent = "Submit";
       popupContainer.appendChild(submitButton);
 
@@ -534,7 +542,8 @@ async function createGuestVisitor(unit, autofill) {
       });
 
       submitButton.onclick = async function () {
-        const name = nameInput.value;
+        const fName = fNameInput.value;
+        const lName = lNameInput.value;
         const timeGroup = timeGroupInput.value;
         const accessProfile = accessProfileInput.value;
         const code = codeInput.value;
@@ -556,8 +565,8 @@ async function createGuestVisitor(unit, autofill) {
                 accessProfileId: accessProfile,
                 unitId: unit,
                 accessCode: code,
-                firstName: name,
-                lastName: "Guest",
+                firstName: fName,
+                lastName: lName,
                 email: email,
                 mobilePhoneNumber: phone,
                 isTenant: false,
