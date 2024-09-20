@@ -1113,7 +1113,6 @@ async function displayData() {
     idCell.title = "View visitor information";
     idCell.classList.add("idCell");
     row.insertCell().textContent = item.unitNumber;
-    var unitNumber = item.unitNumber;
     row.insertCell().textContent = item.status;
     var facilityIdCell = row.insertCell();
     var propertyNumberCell = row.insertCell();
@@ -1131,11 +1130,7 @@ async function displayData() {
     prop2Cell.textContent = item.extendedData.additionalProp2;
     prop3Cell.textContent = item.extendedData.additionalProp3;
     idCell.addEventListener("click", function () {
-      if (item.status != "Vacant") {
-        visitorDashboard(item.id);
-      } else {
-        alert("Unit is not rented");
-      }
+      visitorDashboard(item.id);
     });
     var buttonCell = row.insertCell();
     buttons = [];
