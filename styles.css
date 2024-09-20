@@ -42,9 +42,35 @@
   font-weight: 400;
   font-style: normal;
 }
+html,
+body {
+  height: 100%;
+}
 body {
   background-color: var(--body-background);
   color: var(--body-text);
+}
+table {
+  flex-grow: 1;
+}
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full viewport height */
+}
+/* Footer Styles */
+footer {
+  color: var(--body-text);
+  padding: 20px 0;
+  text-align: center;
+}
+
+footer a {
+  text-decoration: none;
+  color: var(--clickable-blue);
+}
+footer a:hover {
+  color: var(--clickable-blue-hover);
 }
 
 .guestSubmit {
@@ -70,6 +96,7 @@ button:hover,
 }
 
 .delete-button:hover,
+.delete-btn:hover,
 .out-button:hover,
 .clear-button:hover,
 .close-button:hover {
@@ -386,6 +413,7 @@ input:checked + .slider:before {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+  margin-bottom: 10px;
   gap: 5px;
 }
 .center-buttons button {

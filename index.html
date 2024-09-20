@@ -8,117 +8,129 @@
   </head>
 
   <body>
-    <!-- Navigation -->
-    <nav>
-      <div class="left">
-        <a id="refreshIcon" onclick="refreshTable()">↻</a>
-        <p id="loadDateTime">Date Loading...</p>
-      </div>
-      <a href="#" id="facilityName">Facility Loading...</a>
-      <div class="right">
-        <label class="darkModeCheckbox">Dark Mode</label>
-        <label class="switch">
-          <input type="checkbox" id="darkModeToggle" />
-          <span class="slider round"></span>
-        </label>
-      </div>
-    </nav>
-    <!-- Loading Spinner .hidden on load -->
-    <div id="loading-spinner" class="hidden">
-      <div class="spinner"></div>
-    </div>
-    <!-- Header Containers -->
-    <div class="header-container">
-      <div class="left-container">
-        <button
-          onclick="exportJSONToCSV('tenants.csv')"
-          style="font-size: medium"
-        >
-          Export to CSV
-        </button>
-        <input
-          type="file"
-          id="csvFileInput"
-          accept=".csv"
-          onchange="readCSVFile(event)"
-          style="display: none"
-        />
-        <!-- Import disabled until access profile is added -->
-        <!-- <label for="csvFileInput" class="import-btn">Import CSV</label> -->
-      </div>
-      <div class="status-container">
-        <div class="status-item">
-          <h2 id="rented">0</h2>
-          <p>Rented</p>
+    <div class="wrapper">
+      <!-- Navigation -->
+      <nav>
+        <div class="left">
+          <a id="refreshIcon" onclick="refreshTable()">↻</a>
+          <p id="loadDateTime">Date Loading...</p>
         </div>
-        <div class="status-item">
-          <h2 id="delinquent">0</h2>
-          <p>Delinquent</p>
+        <a href="#" id="facilityName">Facility Loading...</a>
+        <div class="right">
+          <label class="darkModeCheckbox">Dark Mode</label>
+          <label class="switch">
+            <input type="checkbox" id="darkModeToggle" />
+            <span class="slider round"></span>
+          </label>
         </div>
-        <div class="status-item">
-          <h2 id="vacant">0</h2>
-          <p>Vacant</p>
-        </div>
-        <div class="status-item">
-          <h2 id="total">0</h2>
-          <p>Total</p>
-        </div>
+      </nav>
+      <!-- Loading Spinner .hidden on load -->
+      <div id="loading-spinner" class="hidden">
+        <div class="spinner"></div>
       </div>
-      <div class="center-container"></div>
-      <div class="btn-container">
-        <div class="checkbox-container">
-          <label for="autofillCheckbox" class="checkbox-label"
-            >Tenant Autofill:</label
+      <!-- Header Containers -->
+      <div class="header-container">
+        <div class="left-container">
+          <button
+            onclick="exportJSONToCSV('tenants.csv')"
+            style="font-size: medium"
           >
-          <div>
-            <label class="switch">
-              <input type="checkbox" id="autofillCheckbox" />
-              <span class="slider"></span>
-            </label>
+            Export Visitors
+          </button>
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            onchange="readCSVFile(event)"
+            style="display: none"
+          />
+          <!-- Import disabled until access profile is added -->
+          <!-- <label for="csvFileInput" class="import-btn">Import CSV</label> -->
+        </div>
+        <div class="status-container">
+          <div class="status-item">
+            <h2 id="rented">0</h2>
+            <p>Rented</p>
+          </div>
+          <div class="status-item">
+            <h2 id="delinquent">0</h2>
+            <p>Delinquent</p>
+          </div>
+          <div class="status-item">
+            <h2 id="vacant">0</h2>
+            <p>Vacant</p>
+          </div>
+          <div class="status-item">
+            <h2 id="total">0</h2>
+            <p>Total</p>
           </div>
         </div>
-        <button id="unitButton">Add Unit</button>
-        <button id="bearerButton">Update Auth</button>
+        <div class="center-container"></div>
+        <div class="btn-container">
+          <div class="checkbox-container">
+            <label for="autofillCheckbox" class="checkbox-label"
+              >Visitor Autofill:</label
+            >
+            <div>
+              <label class="switch">
+                <input type="checkbox" id="autofillCheckbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <button id="unitButton">Add Unit</button>
+          <button id="bearerButton">Update Auth</button>
+        </div>
       </div>
+      <!-- Unit Data Table -->
+      <table id="jsonTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)" class="clickable">ID</th>
+            <th onclick="sortTable(1)" class="clickable">Unit Number</th>
+            <th onclick="sortTable(2)" class="clickable">Status</th>
+            <th onclick="sortTable(3)" class="clickable hide-column">
+              Facility ID
+            </th>
+            <th onclick="sortTable(4)" class="clickable hide-column">
+              Property Number
+            </th>
+            <th onclick="sortTable(5)" class="clickable hide-column">
+              Additional Prop 1
+            </th>
+            <th onclick="sortTable(6)" class="clickable hide-column">
+              Additional Prop 2
+            </th>
+            <th onclick="sortTable(7)" class="clickable hide-column">
+              Additional Prop 3
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <!-- Pagnation buttons -->
+      <div class="center-buttons">
+        <button onclick="previousPage()">Back</button>
+        <span id="pageIndicator">0 of 0</span>
+        <button onclick="nextPage()">Next</button>
+      </div>
+      <!-- Footer -->
+      <!-- Incase copyright is needed -->
+      <!-- <footer>&copy; 2024 Company Name. All Rights Reserved.</footer> -->
+      <footer>
+        <a href="https://coryfishi.github.io/Lock-Dashboard/">Lock Dashboard</a>
+        |
+        <a href="https://coryfishi.github.io/PropertyManagementSolution/"
+          >Property Management Solution</a
+        >
+      </footer>
+      <!-- Error Notification -->
+      <p id="errText">Error Loading...</p>
+      <!-- JavaScript Includes -->
+      <script src="token.js"></script>
+      <script src="eventHandler.js"></script>
+      <script src="export.js"></script>
     </div>
-    <!-- Unit Data Table -->
-    <table id="jsonTable">
-      <thead>
-        <tr>
-          <th onclick="sortTable(0)" class="clickable">ID</th>
-          <th onclick="sortTable(1)" class="clickable">Unit Number</th>
-          <th onclick="sortTable(2)" class="clickable">Status</th>
-          <th onclick="sortTable(3)" class="clickable hide-column">
-            Facility ID
-          </th>
-          <th onclick="sortTable(4)" class="clickable hide-column">
-            Property Number
-          </th>
-          <th onclick="sortTable(5)" class="clickable hide-column">
-            Additional Prop 1
-          </th>
-          <th onclick="sortTable(6)" class="clickable hide-column">
-            Additional Prop 2
-          </th>
-          <th onclick="sortTable(7)" class="clickable hide-column">
-            Additional Prop 3
-          </th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <!-- Pagnation buttons -->
-    <div class="center-buttons">
-      <button onclick="previousPage()">Back</button>
-      <span id="pageIndicator">0 of 0</span>
-      <button onclick="nextPage()">Next</button>
-    </div>
-    <!-- Error Notification -->
-    <p id="errText">Error Loading...</p>
-    <!-- JavaScript Includes -->
-    <script src="token.js"></script>
-    <script src="eventHandler.js"></script>
-    <script src="export.js"></script>
   </body>
 </html>
