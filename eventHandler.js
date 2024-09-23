@@ -1617,61 +1617,61 @@ function displayLoadDateTime() {
   loadDateTimeElement.textContent = "Last Refresh: " + formatDate(loadDateTime);
 }
 
-// Function to sort the table
-async function sortTable(columnIndex) {
-  showLoadingSpinner();
+// // Function to sort the table
+// async function sortTable(columnIndex) {
+//   showLoadingSpinner();
 
-  return new Promise((resolve, reject) => {
-    var table,
-      rows,
-      switching,
-      i,
-      x,
-      y,
-      shouldSwitch,
-      dir,
-      switchcount = 0;
-    table = document.getElementById("jsonTable");
-    switching = true;
-    dir = "asc";
-    while (switching) {
-      switching = false;
-      rows = table.rows;
-      for (i = 1; i < rows.length - 1; i++) {
-        shouldSwitch = false;
-        x = rows[i].getElementsByTagName("TD")[columnIndex];
-        y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
-        if (dir == "asc") {
-          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-            shouldSwitch = true;
-            break;
-          }
-        } else if (dir == "desc") {
-          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-            shouldSwitch = true;
-            break;
-          }
-        }
-      }
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-        switchcount++;
-      } else {
-        if (switchcount == 0 && dir == "asc") {
-          dir = "desc";
-          switching = true;
-        }
-      }
-    }
-    resolve();
-  }).then(() => {
-    hideLoadingSpinner();
-    // Reset to the first page after sorting
-    currentPage = 1;
-    displayRows();
-  });
-}
+//   return new Promise((resolve, reject) => {
+//     var table,
+//       rows,
+//       switching,
+//       i,
+//       x,
+//       y,
+//       shouldSwitch,
+//       dir,
+//       switchcount = 0;
+//     table = document.getElementById("jsonTable");
+//     switching = true;
+//     dir = "asc";
+//     while (switching) {
+//       switching = false;
+//       rows = table.rows;
+//       for (i = 1; i < rows.length - 1; i++) {
+//         shouldSwitch = false;
+//         x = rows[i].getElementsByTagName("TD")[columnIndex];
+//         y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+//         if (dir == "asc") {
+//           if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+//             shouldSwitch = true;
+//             break;
+//           }
+//         } else if (dir == "desc") {
+//           if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+//             shouldSwitch = true;
+//             break;
+//           }
+//         }
+//       }
+//       if (shouldSwitch) {
+//         rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+//         switching = true;
+//         switchcount++;
+//       } else {
+//         if (switchcount == 0 && dir == "asc") {
+//           dir = "desc";
+//           switching = true;
+//         }
+//       }
+//     }
+//     resolve();
+//   }).then(() => {
+//     hideLoadingSpinner();
+//     // Reset to the first page after sorting
+//     currentPage = 1;
+//     displayRows();
+//   });
+// }
 
 // Function to disable all buttons
 function disableButtons() {
@@ -1713,9 +1713,9 @@ async function refreshTable() {
     getFacility();
     hideLoadingSpinner();
   }, 1000);
-  setTimeout(() => {
-    sortTable(1);
-  }, 1005);
+  // setTimeout(() => {
+  //   sortTable(1);
+  // }, 1005);
   setTimeout(() => {
     displayLoadDateTime();
     countTableRowsByStatus();
@@ -1894,8 +1894,8 @@ async function onWebLoad() {
   // Hide loading spinner
   hideLoadingSpinner();
 
-  // Sort the table
-  sortTable(1);
+  // // Sort the table
+  // sortTable(1);
 
   // Show load date
   displayLoadDateTime();
