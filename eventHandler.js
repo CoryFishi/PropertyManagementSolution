@@ -9,10 +9,18 @@ const username = localStorage.getItem("username"); // Retrieves the username fro
 const password = localStorage.getItem("password"); // Retrieves the password from localStorage
 const clientID = localStorage.getItem("client_id"); // Retrieves the client ID from localStorage
 const secretID = localStorage.getItem("secret_id"); // Retrieves the secret ID from localStorage
-var envKey = localStorage.getItem("environment"); // Retrieves the environment key from localStorage
-const stageKey = localStorage.getItem("stageKey"); // Retrieves the stage key from localStorage
-// console.log(propertyID, username, password, clientID, secretID, envKey, stageKey);
+var envKey = localStorage.getItem("environment") || ""; // Retrieves the environment key from localStorage
 let bearerToken; // Holds the bearer token for authentication
+
+// console.log(
+//   propertyID,
+//   username,
+//   password,
+//   clientID,
+//   secretID,
+//   envKey,
+//   bearerToken
+// );
 let jsonData; // Holds JSON data fetched from APIs
 let currentTime; // Holds the current time in milliseconds
 let expirationTime; // Holds the expiration time of the bearer token
@@ -24,11 +32,6 @@ opened = false; // Variable to track if popup is opened
 const errorText = document.getElementById("errText");
 var accessProfiles;
 var timeProfiles;
-
-// Check if staging is enabled, if so disable envKey
-if (stageKey !== "") {
-  envKey = "";
-}
 
 if (
   propertyID === null ||
@@ -79,8 +82,15 @@ async function removeGuestVisitor(visitor) {
 async function getVisitor(visitor) {
   return new Promise(async (resolve, reject) => {
     try {
+      var tokenStageKey = "";
+      var tokenEnvKey = "";
+      if (envKey === "cia-stg-1.aws.") {
+        tokenStageKey = "cia-stg-1.aws.";
+      } else {
+        tokenEnvKey = envKey;
+      }
       const response = await fetch(
-        `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitor}`,
+        `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/visitors/${visitor}`,
         {
           headers: {
             Authorization: "Bearer " + (await bearerToken.access_token),
@@ -550,8 +560,15 @@ async function createGuestVisitor(unit, autofill) {
         const email = emailInput.value;
         const phone = phoneInput.value;
         try {
+          var tokenStageKey = "";
+          var tokenEnvKey = "";
+          if (envKey === "cia-stg-1.aws.") {
+            tokenStageKey = "cia-stg-1.aws.";
+          } else {
+            tokenEnvKey = envKey;
+          }
           const response = await fetch(
-            `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+            `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/visitors`,
             {
               method: "POST",
               headers: {
@@ -605,8 +622,15 @@ async function createGuestVisitor(unit, autofill) {
 // Get All Visitors
 async function getAllVisitors(unit) {
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/visitors`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/units/${unit}/visitors`,
       {
         headers: {
           Authorization: "Bearer " + (await bearerToken.access_token),
@@ -803,8 +827,15 @@ async function updateVisitor(info) {
 // Function to get facility time profiles
 async function getTimeProfiles() {
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/timegroups`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/timegroups`,
       {
         headers: {
           accept: "application/json",
@@ -832,8 +863,15 @@ async function getTimeProfiles() {
 // Function to get facility access profiles
 async function getAccessProfiles() {
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/accessprofiles`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/accessprofiles`,
       {
         headers: {
           accept: "application/json",
@@ -858,48 +896,17 @@ async function getAccessProfiles() {
   }
 }
 
-// Function to create a bearer token for authentication
-async function createBearer(user, pass, id, secret) {
-  currentTime = Date.now();
-  fetch(`https://auth.${stageKey}insomniaccia${envKey}.com/auth/token`, {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-    },
-    body: new URLSearchParams({
-      grant_type: "password",
-      username: user,
-      password: pass,
-      scope: "",
-      client_id: id,
-      client_secret: secret,
-      refresh_token: "",
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Bearer network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      bearerToken = data;
-      expirationTime = currentTime + data.expires_in * 1000;
-    })
-    .catch((error) => {
-      console.error(
-        "There was a problem with the bearer fetch operation:",
-        error
-      );
-      showError(error);
-    });
-  displayLoadDateTime();
-}
-
 // Function to fetch facility data
 async function getFacility() {
+  var tokenStageKey = "";
+  var tokenEnvKey = "";
+  if (envKey === "cia-stg-1.aws.") {
+    tokenStageKey = "cia-stg-1.aws.";
+  } else {
+    tokenEnvKey = envKey;
+  }
   fetch(
-    `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}`,
+    `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}`,
     {
       headers: {
         accept: "application/json",
@@ -921,7 +928,7 @@ async function getFacility() {
       if (facilityElement.href !== "#") {
         facilityElement.target = "_blank";
       }
-      facilityElement.href = `https://portal.${stageKey}insomniaccia${envKey}.com/facility/${propertyID}/dashboard`;
+      facilityElement.href = `https://portal.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facility/${propertyID}/dashboard`;
     })
     .catch((error) => {
       console.error("There was a problem with the fetch operation:", error);
@@ -957,10 +964,16 @@ function hideError() {
 }
 
 // Function to fetch unit list
-async function unitList(num) {
-  // console.log(bearerToken.access_token);
+async function unitList(facilityId) {
+  var tokenStageKey = "";
+  var tokenEnvKey = "";
+  if (envKey === "cia-stg-1.aws.") {
+    tokenStageKey = "cia-stg-1.aws.";
+  } else {
+    tokenEnvKey = envKey;
+  }
   fetch(
-    `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${num}/units`,
+    `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${facilityId}/units`,
     {
       headers: {
         Authorization: "Bearer " + (await bearerToken.access_token),
@@ -975,7 +988,12 @@ async function unitList(num) {
       }
       return response.json();
     })
-    .then((data) => {
+    .then(async (data) => {
+      for (let key in data) {
+        if (Array.isArray(data[key])) {
+          data[key].sort((a, b) => a.unitNumber - b.unitNumber);
+        }
+      }
       jsonData = data;
     })
     .catch((error) => {
@@ -1117,6 +1135,7 @@ async function displayData() {
   }
   jsonData.forEach(function (item) {
     var row = tableBody.insertRow();
+    row.style.display = "none";
     var idCell = row.insertCell();
     idCell.textContent = item.id;
     idCell.title = "View visitor information";
@@ -1184,8 +1203,15 @@ async function displayData() {
 // Function to add a unit
 async function addUnit(unit) {
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/units`,
       {
         method: "POST",
         headers: {
@@ -1221,8 +1247,15 @@ async function addUnit(unit) {
 async function removeUnit(unit) {
   showLoadingSpinner();
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/delete/vacant?suppressCommands=true`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/units/${unit}/delete/vacant?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -1260,8 +1293,15 @@ function generateRandomCode(length) {
 async function addVisitor(unit) {
   showLoadingSpinner();
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/visitors`,
       {
         method: "POST",
         headers: {
@@ -1467,8 +1507,15 @@ async function addVisitorNoFill(unit) {
 async function removeVisitor(unit) {
   showLoadingSpinner();
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/vacate?suppressCommands=true`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/units/${unit}/vacate?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -1498,8 +1545,15 @@ async function removeVisitor(unit) {
 async function addDelinquent(unit) {
   showLoadingSpinner();
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/disable?suppressCommands=true`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/units/${unit}/disable?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -1529,8 +1583,15 @@ async function addDelinquent(unit) {
 async function removeDelinquent(unit) {
   showLoadingSpinner();
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/units/${unit}/enable?suppressCommands=true`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/units/${unit}/enable?suppressCommands=true`,
       {
         method: "POST",
         headers: {
@@ -1618,60 +1679,60 @@ function displayLoadDateTime() {
 }
 
 // Function to sort the table
-async function sortTable(columnIndex) {
-  showLoadingSpinner();
+// async function sortTable(columnIndex) {
+//   showLoadingSpinner();
 
-  return new Promise((resolve, reject) => {
-    var table,
-      rows,
-      switching,
-      i,
-      x,
-      y,
-      shouldSwitch,
-      dir,
-      switchcount = 0;
-    table = document.getElementById("jsonTable");
-    switching = true;
-    dir = "asc";
-    while (switching) {
-      switching = false;
-      rows = table.rows;
-      for (i = 1; i < rows.length - 1; i++) {
-        shouldSwitch = false;
-        x = rows[i].getElementsByTagName("TD")[columnIndex];
-        y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
-        if (dir == "asc") {
-          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-            shouldSwitch = true;
-            break;
-          }
-        } else if (dir == "desc") {
-          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-            shouldSwitch = true;
-            break;
-          }
-        }
-      }
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-        switchcount++;
-      } else {
-        if (switchcount == 0 && dir == "asc") {
-          dir = "desc";
-          switching = true;
-        }
-      }
-    }
-    resolve();
-  }).then(() => {
-    hideLoadingSpinner();
-    // Reset to the first page after sorting
-    currentPage = 1;
-    displayRows();
-  });
-}
+//   return new Promise((resolve, reject) => {
+//     var table,
+//       rows,
+//       switching,
+//       i,
+//       x,
+//       y,
+//       shouldSwitch,
+//       dir,
+//       switchcount = 0;
+//     table = document.getElementById("jsonTable");
+//     switching = true;
+//     dir = "asc";
+//     while (switching) {
+//       switching = false;
+//       rows = table.rows;
+//       for (i = 1; i < rows.length - 1; i++) {
+//         shouldSwitch = false;
+//         x = rows[i].getElementsByTagName("TD")[columnIndex];
+//         y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+//         if (dir == "asc") {
+//           if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+//             shouldSwitch = true;
+//             break;
+//           }
+//         } else if (dir == "desc") {
+//           if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+//             shouldSwitch = true;
+//             break;
+//           }
+//         }
+//       }
+//       if (shouldSwitch) {
+//         rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+//         switching = true;
+//         switchcount++;
+//       } else {
+//         if (switchcount == 0 && dir == "asc") {
+//           dir = "desc";
+//           switching = true;
+//         }
+//       }
+//     }
+//     resolve();
+//   }).then(() => {
+//     hideLoadingSpinner();
+//     // Reset to the first page after sorting
+//     currentPage = 1;
+//     displayRows();
+//   });
+// }
 
 // Function to disable all buttons
 function disableButtons() {
@@ -1713,9 +1774,9 @@ async function refreshTable() {
     getFacility();
     hideLoadingSpinner();
   }, 1000);
-  setTimeout(() => {
-    sortTable(1);
-  }, 1005);
+  // setTimeout(() => {
+  //   sortTable(1);
+  // }, 1005);
   setTimeout(() => {
     displayLoadDateTime();
     countTableRowsByStatus();
@@ -1874,32 +1935,42 @@ async function onWebLoad() {
   showLoadingSpinner();
 
   // Create bearer token
-  await createBearer(username, password, clientID, secretID);
+  const newBearer = await setBearer(
+    username,
+    password,
+    clientID,
+    secretID,
+    envKey || ""
+  );
+  bearerToken = newBearer;
+  if (newBearer) {
+    // Get unit data
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await unitList(propertyID);
 
-  // Get unit data
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  await unitList(propertyID);
+    // Get the facility name and display it
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await getFacility();
 
-  // Get the facility name and display it
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  await getFacility();
+    // Display the unit table
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await displayData();
+    await getAccessProfiles();
+    await getTimeProfiles();
+    countTableRowsByStatus();
 
-  // Display the unit table
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  await displayData();
-  await getAccessProfiles();
-  await getTimeProfiles();
-  countTableRowsByStatus();
+    // Hide loading spinner
+    hideLoadingSpinner();
 
-  // Hide loading spinner
-  hideLoadingSpinner();
+    // Sort the table
+    // sortTable(1);
 
-  // Sort the table
-  sortTable(1);
-
-  // Show load date
-  displayLoadDateTime();
-  displayRows();
+    // Show load date
+    displayLoadDateTime();
+    displayRows();
+  } else {
+    showError("Credntials not valid");
+  }
 }
 
 /*----------------------------------------------------------------
