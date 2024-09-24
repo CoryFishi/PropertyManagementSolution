@@ -1,21 +1,22 @@
 // Variable to track if popup is opened
 var opened = false;
-var facilitiesInfo = [];
+let facilitiesInfo = {};
 
 if (!localStorage.getItem("environment")) {
   localStorage.setItem("environment", "");
 }
 
-// Function to fetch facilities data
-// Function to fetch facilities data
+// Function to fetch facilities data and return a new object
 async function getFacilities(facility) {
   var tokenStageKey = "";
   var tokenEnvKey = "";
+
   if (facility.environment === "cia-stg-1.aws.") {
     tokenStageKey = "cia-stg-1.aws.";
   } else {
     tokenEnvKey = facility.environment;
   }
+
   try {
     const response = await fetch(
       `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities`,
@@ -31,34 +32,15 @@ async function getFacilities(facility) {
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
+
     const data = await response.json();
+    let result = [];
 
     // Loop through each key in the data object
     for (let key in data) {
-      if (Array.isArray(data[key])) {
-        if (!facilitiesInfo[key]) {
-          facilitiesInfo[key] = []; // Initialize if it doesn't exist
-        }
-
-        // Create updated array with new properties and merge with existing array
-        const updatedArray = data[key].map((item) => {
-          return {
-            ...item, // Preserve the existing properties of the item
-            api: facility.username, // Add new properties
-            apiSecret: facility.password,
-            clientId: facility.client_id,
-            clientSecret: facility.secret_id,
-            environment: facility.environment,
-          };
-        });
-
-        // Concatenate new entries to the existing ones without overwriting
-        facilitiesInfo[key] = facilitiesInfo[key].concat(updatedArray);
-      } else {
-        // If the key is not an array, preserve existing non-array data
-        facilitiesInfo[key] = {
-          ...facilitiesInfo[key], // Merge the existing object if any
-          ...data[key], // Merge the new data without overwriting existing properties
+      if (typeof data[key] === "object" && !Array.isArray(data[key])) {
+        result[key] = {
+          ...data[key],
           api: facility.username,
           apiSecret: facility.password,
           clientId: facility.client_id,
@@ -67,8 +49,7 @@ async function getFacilities(facility) {
         };
       }
     }
-
-    return true;
+    return result;
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
     return null;
@@ -545,19 +526,25 @@ document.getElementById("authButton").addEventListener("click", async () => {
   });
 
   facilities.addEventListener("click", async function () {
+    showLoadingSpinner();
     facilitiesInfo = [];
-    tbody.innerHTML = ""; // Clear the table body
+    tbody.innerHTML = "";
     contentContainer.removeChild(appContainer);
     contentContainer.appendChild(facilitiesContainer);
 
     const sf = getObjectArrayFromLocalStorage();
 
-    // Use a for...of loop to ensure each getFacilities call waits before proceeding
-    for (const facility of sf) {
-      await getFacilities(facility); // Wait for each facility to finish
+    // To ensure it waits for each response
+    async function processFacilities(sf) {
+      for (const facility of sf) {
+        const newFacilities = await getFacilities(facility);
+        facilitiesInfo = [...facilitiesInfo, ...newFacilities];
+        facilitiesInfo.sort((a, b) => a.id - b.id);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
     }
+    await processFacilities(sf);
 
-    // Now proceed to the second loop after all getFacilities calls are finished
     for (const facility of facilitiesInfo) {
       const row = document.createElement("tr");
       headers.forEach((header) => {
@@ -597,6 +584,7 @@ document.getElementById("authButton").addEventListener("click", async () => {
 
       // Append the row to the tbody
       tbody.appendChild(row);
+      hideLoadingSpinner();
     }
 
     facilitiesTable.appendChild(tbody);

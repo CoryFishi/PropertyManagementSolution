@@ -226,6 +226,7 @@ select,
   left: 50%;
   top: 250px;
   transform: translate(-50%);
+  z-index: 9999999;
 }
 
 .spinner {
