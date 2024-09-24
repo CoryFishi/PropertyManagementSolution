@@ -29,10 +29,8 @@ async function getFacilities(facility) {
     );
 
     if (!response.ok) {
-      console.log(response);
       throw new Error("Network response was not ok");
     }
-
     const data = await response.json();
 
     // Loop through each key in the data object
@@ -50,6 +48,7 @@ async function getFacilities(facility) {
             apiSecret: facility.password,
             clientId: facility.client_id,
             clientSecret: facility.secret_id,
+            environment: facility.environment,
           };
         });
 
@@ -64,6 +63,7 @@ async function getFacilities(facility) {
           apiSecret: facility.password,
           clientId: facility.client_id,
           clientSecret: facility.secret_id,
+          environment: facility.environment,
         };
       }
     }
@@ -110,10 +110,7 @@ async function setBearer(user, pass, id, secret, environment) {
     localStorage.setItem("bearer", JSON.stringify(data));
     return data;
   } catch (error) {
-    console.error(
-      "There was a problem with the bearer fetch operation:",
-      error
-    );
+    console.error("There was a problem with the set bearer operation:", error);
     return null;
   }
 }
@@ -248,89 +245,6 @@ document.getElementById("bearerButton").addEventListener("click", function () {
     location.reload();
   });
 
-  // Create save button
-  const saveButton = document.createElement("button");
-  saveButton.textContent = "Save";
-  saveButton.classList.add("save-button");
-  saveButton.addEventListener("click", function () {
-    const idValue = document.getElementById("property_id").value.trim();
-    const authKeyValue = document
-      .getElementById("authorization_key")
-      .value.trim();
-    const authSecretValue = document
-      .getElementById("authorization_secret")
-      .value.trim();
-    const clientIdValue = document.getElementById("client_id").value.trim();
-    const clientSecretValue = document
-      .getElementById("client_secret")
-      .value.trim();
-
-    if (
-      idValue &&
-      authKeyValue &&
-      authSecretValue &&
-      clientIdValue &&
-      clientSecretValue
-    ) {
-      let savedFacilities = getObjectArrayFromLocalStorage();
-      savedFacilities.push({
-        property_id: idValue,
-        username: authKeyValue,
-        password: authSecretValue,
-        client_id: clientIdValue,
-        secret_id: clientSecretValue,
-        value: idValue,
-      });
-      localStorage.setItem("property_id", idValue);
-      localStorage.setItem("client_id", clientIdValue);
-      localStorage.setItem("secret_id", clientSecretValue);
-      localStorage.setItem("username", authKeyValue);
-      localStorage.setItem("password", authSecretValue);
-      saveObjectArrayToLocalStorage(savedFacilities);
-      updateDropdownOptions();
-    }
-  });
-
-  // Create saved facilities dropdown
-  const savedWrapper = document.createElement("div");
-  const savedLabel = document.createElement("label");
-  savedLabel.textContent = "Saved Facilities:";
-  savedWrapper.appendChild(savedLabel);
-
-  const selectButton = document.createElement("select");
-  selectButton.classList.add("select-button");
-  selectButton.id = "droppy";
-  savedWrapper.appendChild(selectButton);
-  var optionElement = document.createElement("option");
-  optionElement.value = null;
-  optionElement.text = "-";
-  selectButton.appendChild(optionElement);
-
-  // Event listener for dropdown selection changes
-  selectButton.addEventListener("change", function (event) {
-    const selectedValue = event.target.value;
-    const selectedFacility = getObjectArrayFromLocalStorage().find(
-      (facility) => facility.value === selectedValue
-    );
-    if (selectedFacility) {
-      localStorage.setItem("property_id", selectedFacility.property_id);
-      localStorage.setItem("client_id", selectedFacility.client_id);
-      localStorage.setItem("secret_id", selectedFacility.secret_id);
-      localStorage.setItem("username", selectedFacility.username);
-      localStorage.setItem("password", selectedFacility.password);
-      opened = false;
-      location.reload();
-    } else {
-      localStorage.setItem("property_id", "");
-      localStorage.setItem("client_id", "");
-      localStorage.setItem("secret_id", "");
-      localStorage.setItem("username", "");
-      localStorage.setItem("password", "");
-      opened = false;
-      location.reload();
-    }
-  });
-
   // Create environment dropdown
   const envWrapper = document.createElement("div");
   const envLabel = document.createElement("label");
@@ -409,22 +323,8 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   popupContainer.appendChild(closeButton);
   popupContainer.appendChild(submitButton);
   popupContainer.appendChild(clearButton);
-  popupContainer.appendChild(saveButton);
-  popupContainer.appendChild(savedWrapper);
   popupContainer.appendChild(envWrapper);
   document.body.appendChild(popupContainer);
-
-  // Function to update the dropdown options
-  function updateDropdownOptions() {
-    const selectyButton = document.getElementById("droppy");
-    const options = getObjectArrayFromLocalStorage();
-    options.forEach(function (option) {
-      var optionElement = document.createElement("option");
-      optionElement.value = option.value;
-      optionElement.text = option.value;
-      selectyButton.appendChild(optionElement);
-    });
-  }
 });
 
 document.getElementById("authButton").addEventListener("click", async () => {
@@ -464,8 +364,13 @@ document.getElementById("authButton").addEventListener("click", async () => {
   menuContainer.appendChild(clearData);
 
   clearData.addEventListener("click", async function () {
-    localStorage.clear();
-    location.reload();
+    const userResponse = confirm(
+      "Are you sure you would like to delete all saved data?"
+    );
+    if (userResponse) {
+      localStorage.clear();
+      location.reload();
+    }
   });
 
   const appContainer = document.createElement("div");
@@ -544,7 +449,7 @@ document.getElementById("authButton").addEventListener("click", async () => {
   appContainerNew.appendChild(envInput);
   const submitButton = document.createElement("button");
   submitButton.classList.add("guestSubmit");
-  submitButton.textContent = "Submit";
+  submitButton.textContent = "Save & Submit";
   appContainerNew.appendChild(newError);
   appContainerNew.appendChild(submitButton);
 
@@ -617,6 +522,7 @@ document.getElementById("authButton").addEventListener("click", async () => {
           password: authSecretValue,
           client_id: clientIdValue,
           secret_id: clientSecretValue,
+          environment: envValue || "",
         },
         savedFacilities.length - 1,
         savedList
@@ -671,8 +577,6 @@ document.getElementById("authButton").addEventListener("click", async () => {
             selectButton.textContent = "Select";
             selectButton.classList.add("select-btn");
             selectButton.onclick = async function () {
-              console.log(facility);
-              onWebLoad();
               localStorage.setItem("property_id", facility.id);
               localStorage.setItem("username", facility.api);
               localStorage.setItem("password", facility.apiSecret);
@@ -680,6 +584,7 @@ document.getElementById("authButton").addEventListener("click", async () => {
               localStorage.setItem("secret_id", facility.clientSecret);
               localStorage.setItem("environment", facility.environment || "");
               localStorage.setItem("bearer", facility.bearer);
+              location.reload();
             };
             td.appendChild(selectButton);
             break;

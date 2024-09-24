@@ -9,7 +9,7 @@ const username = localStorage.getItem("username"); // Retrieves the username fro
 const password = localStorage.getItem("password"); // Retrieves the password from localStorage
 const clientID = localStorage.getItem("client_id"); // Retrieves the client ID from localStorage
 const secretID = localStorage.getItem("secret_id"); // Retrieves the secret ID from localStorage
-var envKey = localStorage.getItem("environment") || ""; // Retrieves the environment key from localStorage
+var envKey = localStorage.getItem("environment"); // Retrieves the environment key from localStorage
 let bearerToken; // Holds the bearer token for authentication
 
 // console.log(
@@ -40,7 +40,7 @@ if (
   clientID === null ||
   secretID === null
 ) {
-  bearerButton.classList.add("pulsate");
+  authButton.classList.add("pulsate");
 }
 
 /*----------------------------------------------------------------
@@ -170,7 +170,7 @@ async function visitorDashboard(unit) {
       headers.forEach((header) => {
         const td = document.createElement("td");
         switch (header) {
-          case "Id":
+          case "Visitor Id":
             td.textContent = guest.id;
             break;
           case "Unit Number":
@@ -188,7 +188,7 @@ async function visitorDashboard(unit) {
           case "Access Profile":
             td.textContent = guest.accessProfileName;
             break;
-          case "Code":
+          case "Gate Code":
             td.textContent = guest.code;
             break;
           case "Email":
@@ -264,15 +264,15 @@ async function visitorDashboard(unit) {
   visitorsTable.className = "visitors-table";
 
   const headers = [
-    "Id",
+    "Visitor Id",
     "Unit Number",
-    "Name",
+    "Visitor Name",
     "isTenant",
     "Time Group",
     "Access Profile",
-    "Code",
-    "Email",
-    "Phone",
+    "Gate Code",
+    "Email Address",
+    "Phone Number",
     "Actions",
   ];
   const thead = document.createElement("thead");
@@ -293,13 +293,13 @@ async function visitorDashboard(unit) {
     headers.forEach((header) => {
       const td = document.createElement("td");
       switch (header) {
-        case "Id":
+        case "Visitor Id":
           td.textContent = visitor.id;
           break;
         case "Unit Number":
           td.textContent = visitor.unitNumber;
           break;
-        case "Name":
+        case "Visitor Name":
           td.textContent = visitor.name;
           break;
         case "isTenant":
@@ -315,13 +315,13 @@ async function visitorDashboard(unit) {
         case "Access Profile":
           td.textContent = visitor.accessProfileName;
           break;
-        case "Code":
+        case "Gate Code":
           td.textContent = visitor.code;
           break;
-        case "Email":
+        case "Email Address":
           td.textContent = visitor.email;
           break;
-        case "Phone":
+        case "Phone Number":
           td.textContent = visitor.mobilePhoneNumber;
           break;
         case "Actions":
@@ -475,21 +475,21 @@ async function createGuestVisitor(unit, autofill) {
       popupContainer.classList.add("addGuestVisitor-popup-container");
 
       const fNameLabel = document.createElement("label");
-      fNameLabel.textContent = "First Name";
+      fNameLabel.textContent = "Visitor First Name";
       popupContainer.appendChild(fNameLabel);
       const fNameInput = document.createElement("input");
       fNameInput.classList.add("textInput");
       popupContainer.appendChild(fNameInput);
 
       const lNameLabel = document.createElement("label");
-      lNameLabel.textContent = "Last Name";
+      lNameLabel.textContent = "Visitor Last Name";
       popupContainer.appendChild(lNameLabel);
       const lNameInput = document.createElement("input");
       lNameInput.classList.add("textInput");
       popupContainer.appendChild(lNameInput);
 
       const codeLabel = document.createElement("label");
-      codeLabel.textContent = "Code";
+      codeLabel.textContent = "Gate Code";
       popupContainer.appendChild(codeLabel);
       const codeInput = document.createElement("input");
       codeInput.classList.add("textInput");
@@ -949,10 +949,9 @@ function showError(err) {
   } else {
     errText.textContent = err;
   }
-  console.log(err);
   errText.classList.remove("hidden");
   errText.classList.add("visible");
-  bearerButton.classList.add("pulsate");
+  authButton.classList.add("pulsate");
   hideLoadingSpinner();
 }
 
@@ -989,12 +988,11 @@ async function unitList(facilityId) {
       return response.json();
     })
     .then(async (data) => {
-      for (let key in data) {
-        if (Array.isArray(data[key])) {
-          data[key].sort((a, b) => a.unitNumber - b.unitNumber);
-        }
-      }
+      data.sort((a, b) => {
+        return a.unitNumber.localeCompare(b.unitNumber);
+      });
       jsonData = data;
+      console.log(data);
     })
     .catch((error) => {
       console.error("There was a problem with the fetch operation:", error);
@@ -1890,9 +1888,13 @@ function displayRows() {
   for (let i = start; i < end && i < rows.length; i++) {
     rows[i].style.display = ""; // Show only the rows for the current page
   }
-  document.getElementById(
-    "pageIndicator"
-  ).innerText = `${currentPage} of ${totalPages}`;
+  if (totalPages) {
+    document.getElementById(
+      "pageIndicator"
+    ).innerText = `${currentPage} of ${totalPages}`;
+  } else {
+    document.getElementById("pageIndicator").innerText = `${currentPage} of 1`;
+  }
 }
 
 function nextPage() {
@@ -1933,27 +1935,24 @@ function hideLoadingSpinner() {
 async function onWebLoad() {
   // Show loading spinner
   showLoadingSpinner();
-
   // Create bearer token
   const newBearer = await setBearer(
     username,
     password,
     clientID,
     secretID,
-    envKey || ""
+    localStorage.getItem("environment") || ""
   );
   bearerToken = newBearer;
   if (newBearer) {
     // Get unit data
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     await unitList(propertyID);
 
     // Get the facility name and display it
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     await getFacility();
 
     // Display the unit table
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     await displayData();
     await getAccessProfiles();
     await getTimeProfiles();
