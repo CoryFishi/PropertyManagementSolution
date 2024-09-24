@@ -208,8 +208,11 @@ async function visitorDashboard(unit) {
             const editButton = document.createElement("button");
             editButton.textContent = "Edit";
             editButton.classList.add("edit-btn");
-            editButton.onclick = function () {
-              const visitorInfo = getVisitor(guest.id);
+
+
+           editButton.onclick = async function () {
+              const visitorInfo = await getVisitor(guest.id);
+             
               const cells = newRow.querySelectorAll("td");
               cells[0].textContent = visitorInfo.id;
               cells[1].textContent = visitorInfo.unitNumber;
@@ -1369,7 +1372,7 @@ async function addVisitorNoFill(unit) {
       "LastName",
       "Email",
       "Mobile Phone Number",
-      "Code",
+      "Gate Code",
       "Access Profile",
       "Time Profile",
     ];
@@ -1740,6 +1743,7 @@ async function refreshTable() {
     getFacility();
     hideLoadingSpinner();
   }, 500);
+
   setTimeout(() => {
     displayLoadDateTime();
     countTableRowsByStatus();
@@ -1923,8 +1927,10 @@ async function onWebLoad() {
     await getTimeProfiles();
     countTableRowsByStatus();
 
+
     // Hide loading spinner
     hideLoadingSpinner();
+
 
     // Show load date
     displayLoadDateTime();
