@@ -139,9 +139,9 @@ button:hover,
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 9999;
-  background-color: white;
   padding: 20px;
   border: 2px solid red;
+  text-shadow: 1px 1px 1px var(--table-border);
 }
 
 .clickable:hover {
@@ -477,19 +477,19 @@ input:checked + .slider:before {
   z-index: 9999;
 }
 .addGuestVisitor-popup-container {
-  width: 250px;
-  height: 440px;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--body-background);
-  padding: 40px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--popup-background);
+  padding: 30px;
+  border-radius: 5px;
+  border: 2px solid var(--table-border);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   z-index: 9999;
+  max-width: 25vw;
 }
+
 .close-button {
   position: absolute;
   top: 10px;
@@ -683,4 +683,20 @@ tr:nth-child(even) {
   margin: auto;
   text-align: center;
   overflow-y: auto;
+}
+
+.favorites-container {
+  width: 90%;
+  height: 100%;
+  background-color: #2196f3;
+  margin: auto;
+  text-align: center;
+  overflow-y: auto;
+}
+
+#favoriteCell {
+  cursor: pointer;
+  text-align: center;
+  font-size: xx-large;
+  color: var(--btn-yellow);
 }

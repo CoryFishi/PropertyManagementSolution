@@ -1,9 +1,28 @@
 // Variable to track if popup is opened
 var opened = false;
 let facilitiesInfo = {};
+let favoritesInfo = [];
 
 if (!localStorage.getItem("environment")) {
   localStorage.setItem("environment", "");
+}
+
+async function addFavorite(facility) {
+  favoritesInfo = favoritesInfo || [];
+  const facilityExists = favoritesInfo.some(
+    (fav) => fav.name === facility.name
+  );
+  if (facilityExists) {
+    return;
+  }
+  favoritesInfo = [...favoritesInfo, facility];
+  favoritesInfo.sort((a, b) => a.id - b.id);
+}
+
+async function removeFavorite(facility) {
+  favoritesInfo = favoritesInfo || [];
+  favoritesInfo = favoritesInfo.filter((fav) => fav.name !== facility.name);
+  favoritesInfo.sort((a, b) => a.id - b.id);
 }
 
 // Function to fetch facilities data and return a new object
@@ -218,12 +237,17 @@ document.getElementById("bearerButton").addEventListener("click", function () {
   clearButton.textContent = "Clear";
   clearButton.classList.add("clear-button");
   clearButton.addEventListener("click", function () {
-    localStorage.clear();
-    localStorage.setItem("environment", "");
-    localStorage.setItem("stageKey", "");
-    document.body.removeChild(popupContainer);
-    opened = false;
-    location.reload();
+    const userResponse = confirm(
+      "Are you sure you would like to delete all saved data?"
+    );
+    if (userResponse) {
+      localStorage.clear();
+      localStorage.setItem("environment", "");
+      localStorage.setItem("stageKey", "");
+      document.body.removeChild(popupContainer);
+      opened = false;
+      location.reload();
+    }
   });
 
   // Create environment dropdown
@@ -336,13 +360,22 @@ document.getElementById("authButton").addEventListener("click", async () => {
   const facilities = document.createElement("button");
   facilities.classList.add("auth-menu-button");
   facilities.textContent = "Facilities";
+  const favorites = document.createElement("button");
+  favorites.classList.add("auth-menu-button");
+  favorites.textContent = "Favorites";
   const clearData = document.createElement("button");
   clearData.classList.add("auth-menu-button");
   clearData.textContent = "Clear All Data";
+  const tempMsg = document.createElement("p");
+  tempMsg.textContent =
+    "It is recommend if you have not used the new Auth system, to Clear All Data";
+  tempMsg.style.color = "red";
 
   menuContainer.appendChild(applications);
   menuContainer.appendChild(facilities);
+  menuContainer.appendChild(favorites);
   menuContainer.appendChild(clearData);
+  menuContainer.appendChild(tempMsg);
 
   clearData.addEventListener("click", async function () {
     const userResponse = confirm(
@@ -443,7 +476,7 @@ document.getElementById("authButton").addEventListener("click", async () => {
   const facilitiesTable = document.createElement("table");
   facilitiesTable.className = "visitors-table";
 
-  const headers = ["Id", "Name", "Property Number", "Actions"];
+  const headers = ["Favorite", "Id", "Name", "Property Number", "Actions"];
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
   headers.forEach((headerText) => {
@@ -520,17 +553,23 @@ document.getElementById("authButton").addEventListener("click", async () => {
     }
   });
 
+  const favoritesContainer = document.createElement("div");
+  favoritesContainer.classList.add("favorites-container");
+
+  facilitiesTable.appendChild(thead);
+
   applications.addEventListener("click", function () {
-    contentContainer.removeChild(facilitiesContainer);
-    contentContainer.appendChild(appContainer);
+    const child = contentContainer.children[0];
+    contentContainer.replaceChild(appContainer, child);
   });
 
   facilities.addEventListener("click", async function () {
     showLoadingSpinner();
     facilitiesInfo = [];
     tbody.innerHTML = "";
-    contentContainer.removeChild(appContainer);
-    contentContainer.appendChild(facilitiesContainer);
+
+    const child = contentContainer.children[0];
+    contentContainer.replaceChild(facilitiesContainer, child);
 
     const sf = getObjectArrayFromLocalStorage();
 
@@ -550,6 +589,20 @@ document.getElementById("authButton").addEventListener("click", async () => {
       headers.forEach((header) => {
         const td = document.createElement("td");
         switch (header) {
+          case "Favorite":
+            td.id = "favoriteCell";
+            td.textContent = "☆";
+            td.addEventListener("click", () => {
+              if (td.textContent === "☆") {
+                td.textContent = "★";
+                addFavorite(facility);
+              } else {
+                td.textContent = "☆";
+                removeFavorite(facility);
+              }
+            });
+            break;
+
           case "Id":
             td.textContent = facility.id;
             break;
@@ -588,8 +641,70 @@ document.getElementById("authButton").addEventListener("click", async () => {
     }
 
     facilitiesTable.appendChild(tbody);
-    facilitiesTable.appendChild(thead);
     facilitiesContainer.appendChild(facilitiesTable);
+    hideLoadingSpinner();
+  });
+
+  favorites.addEventListener("click", function () {
+    const child = contentContainer.children[0];
+    contentContainer.replaceChild(favoritesContainer, child);
+    showLoadingSpinner();
+
+    facilitiesInfo = [];
+    tbody.innerHTML = "";
+
+    for (const facility of favoritesInfo) {
+      const row = document.createElement("tr");
+      headers.forEach((header) => {
+        const td = document.createElement("td");
+        switch (header) {
+          case "Favorite":
+            td.id = "favoriteCell";
+            td.textContent = "★";
+            td.addEventListener("click", () => {
+              td.textContent = "☆";
+              removeFavorite(facility);
+              row.remove();
+            });
+            break;
+
+          case "Id":
+            td.textContent = facility.id;
+            break;
+          case "Name":
+            td.textContent = facility.name;
+            break;
+          case "Property Number":
+            td.textContent = facility.propertyNumber;
+            break;
+          case "Actions":
+            const selectButton = document.createElement("button");
+            selectButton.textContent = "Select";
+            selectButton.classList.add("select-btn");
+            selectButton.onclick = async function () {
+              localStorage.setItem("property_id", facility.id);
+              localStorage.setItem("username", facility.api);
+              localStorage.setItem("password", facility.apiSecret);
+              localStorage.setItem("client_id", facility.clientId);
+              localStorage.setItem("secret_id", facility.clientSecret);
+              localStorage.setItem("environment", facility.environment || "");
+              localStorage.setItem("bearer", facility.bearer);
+              location.reload();
+            };
+            td.appendChild(selectButton);
+            break;
+          default:
+            td.textContent = "";
+            break;
+        }
+        row.appendChild(td);
+      });
+
+      // Append the row to the tbody
+      tbody.appendChild(row);
+    }
+    hideLoadingSpinner();
+    favoritesContainer.appendChild(facilitiesTable);
   });
 
   // Create close button

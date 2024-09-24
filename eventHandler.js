@@ -51,8 +51,15 @@ if (
 async function removeGuestVisitor(visitor) {
   showLoadingSpinner();
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitor}/remove?suppressCommands=false`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/visitors/${visitor}/remove?suppressCommands=false`,
       {
         method: "POST",
         headers: {
@@ -176,7 +183,7 @@ async function visitorDashboard(unit) {
           case "Unit Number":
             td.textContent = guest.unitNumber;
             break;
-          case "Name":
+          case "Visitor Name":
             td.textContent = guest.name;
             break;
           case "isTenant":
@@ -191,10 +198,10 @@ async function visitorDashboard(unit) {
           case "Gate Code":
             td.textContent = guest.code;
             break;
-          case "Email":
+          case "Email Address":
             td.textContent = guest.email;
             break;
-          case "Phone":
+          case "Phone Number":
             td.textContent = guest.mobilePhoneNumber;
             break;
           case "Actions":
@@ -203,7 +210,6 @@ async function visitorDashboard(unit) {
             editButton.classList.add("edit-btn");
             editButton.onclick = function () {
               const visitorInfo = getVisitor(guest.id);
-              console.log(visitorInfo);
               const cells = row.querySelectorAll("td");
               cells[0].textContent = visitorInfo.id;
               cells[1].textContent = visitorInfo.unitNumber;
@@ -424,12 +430,17 @@ async function visitorDashboard(unit) {
 //Add Guest Tenant
 async function createGuestVisitor(unit, autofill) {
   return new Promise(async (resolve, reject) => {
-    showLoadingSpinner();
-
     if (autofill === "enabled") {
       try {
+        var tokenStageKey = "";
+        var tokenEnvKey = "";
+        if (envKey === "cia-stg-1.aws.") {
+          tokenStageKey = "cia-stg-1.aws.";
+        } else {
+          tokenEnvKey = envKey;
+        }
         const response = await fetch(
-          `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+          `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/visitors`,
           {
             method: "POST",
             headers: {
@@ -663,8 +674,15 @@ async function sendUpdateVisitor(
   visitorID
 ) {
   try {
+    var tokenStageKey = "";
+    var tokenEnvKey = "";
+    if (envKey === "cia-stg-1.aws.") {
+      tokenStageKey = "cia-stg-1.aws.";
+    } else {
+      tokenEnvKey = envKey;
+    }
     const response = await fetch(
-      `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
+      `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/visitors/${visitorID}/update`,
       {
         method: "POST",
         headers: {
@@ -945,7 +963,7 @@ function showError(err) {
   }
   // Check to see if error is defined or not
   if (err === undefined) {
-    errText.textContent = "Error: Unable to fetch data";
+    errText.textContent = "Unable to Fetch Data";
   } else {
     errText.textContent = err;
   }
@@ -1342,7 +1360,6 @@ async function addVisitor(unit) {
 async function addVisitorNoFill(unit) {
   opened = true;
   disableButtons();
-  showLoadingSpinner();
   return new Promise((resolve, reject) => {
     document.body.style.overflow = "hidden";
     const popupContainer = document.createElement("div");
@@ -1402,6 +1419,7 @@ async function addVisitorNoFill(unit) {
     submitButton.textContent = "Submit";
     submitButton.classList.add("submit-button");
     submitButton.addEventListener("click", async function () {
+      showLoadingSpinner();
       let isEmpty = false;
       inputs.forEach((input) => {
         if (input.value === "") {
@@ -1454,8 +1472,15 @@ async function addVisitorNoFill(unit) {
       unit
     ) {
       try {
+        var tokenStageKey = "";
+        var tokenEnvKey = "";
+        if (envKey === "cia-stg-1.aws.") {
+          tokenStageKey = "cia-stg-1.aws.";
+        } else {
+          tokenEnvKey = envKey;
+        }
         const response = await fetch(
-          `https://accesscontrol.${stageKey}insomniaccia${envKey}.com/facilities/${propertyID}/visitors`,
+          `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${propertyID}/visitors`,
           {
             method: "POST",
             headers: {
@@ -1675,62 +1700,6 @@ function displayLoadDateTime() {
   loadDateTimeElement.textContent = "Last Refresh: " + formatDate(loadDateTime);
 }
 
-// Function to sort the table
-// async function sortTable(columnIndex) {
-//   showLoadingSpinner();
-
-//   return new Promise((resolve, reject) => {
-//     var table,
-//       rows,
-//       switching,
-//       i,
-//       x,
-//       y,
-//       shouldSwitch,
-//       dir,
-//       switchcount = 0;
-//     table = document.getElementById("jsonTable");
-//     switching = true;
-//     dir = "asc";
-//     while (switching) {
-//       switching = false;
-//       rows = table.rows;
-//       for (i = 1; i < rows.length - 1; i++) {
-//         shouldSwitch = false;
-//         x = rows[i].getElementsByTagName("TD")[columnIndex];
-//         y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
-//         if (dir == "asc") {
-//           if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-//             shouldSwitch = true;
-//             break;
-//           }
-//         } else if (dir == "desc") {
-//           if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-//             shouldSwitch = true;
-//             break;
-//           }
-//         }
-//       }
-//       if (shouldSwitch) {
-//         rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-//         switching = true;
-//         switchcount++;
-//       } else {
-//         if (switchcount == 0 && dir == "asc") {
-//           dir = "desc";
-//           switching = true;
-//         }
-//       }
-//     }
-//     resolve();
-//   }).then(() => {
-//     hideLoadingSpinner();
-//     // Reset to the first page after sorting
-//     currentPage = 1;
-//     displayRows();
-//   });
-// }
-
 // Function to disable all buttons
 function disableButtons() {
   var buttons = document.getElementsByTagName("button");
@@ -1770,15 +1739,12 @@ async function refreshTable() {
     displayData();
     getFacility();
     hideLoadingSpinner();
-  }, 1000);
-  // setTimeout(() => {
-  //   sortTable(1);
-  // }, 1005);
+  }, 500);
   setTimeout(() => {
     displayLoadDateTime();
     countTableRowsByStatus();
     displayRows();
-  }, 1005);
+  }, 500);
 }
 
 //
@@ -1951,7 +1917,7 @@ async function onWebLoad() {
     await getFacility();
 
     // Display the unit table
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     await displayData();
     await getAccessProfiles();
     await getTimeProfiles();
@@ -1960,14 +1926,11 @@ async function onWebLoad() {
     // Hide loading spinner
     hideLoadingSpinner();
 
-    // Sort the table
-    // sortTable(1);
-
     // Show load date
     displayLoadDateTime();
     displayRows();
   } else {
-    showError("Credntials not valid");
+    showError("Credentials Invalid");
   }
 }
 
