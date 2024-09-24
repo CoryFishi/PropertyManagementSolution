@@ -178,7 +178,7 @@ async function visitorDashboard(unit) {
           case "Access Profile":
             td.textContent = guest.accessProfileName;
             break;
-          case "Code":
+          case "Gate Code":
             td.textContent = guest.code;
             break;
           case "Email":
@@ -191,10 +191,9 @@ async function visitorDashboard(unit) {
             const editButton = document.createElement("button");
             editButton.textContent = "Edit";
             editButton.classList.add("edit-btn");
-            editButton.onclick = function () {
-              const visitorInfo = getVisitor(guest.id);
-              console.log(visitorInfo);
-              const cells = row.querySelectorAll("td");
+            editButton.onclick = async function () {
+              const visitorInfo = await getVisitor(guest.id);
+              const cells = newRow.querySelectorAll("td");
               cells[0].textContent = visitorInfo.id;
               cells[1].textContent = visitorInfo.unitNumber;
               cells[2].textContent = visitorInfo.name;
@@ -260,7 +259,7 @@ async function visitorDashboard(unit) {
     "isTenant",
     "Time Group",
     "Access Profile",
-    "Code",
+    "Gate Code",
     "Email",
     "Phone",
     "Actions",
@@ -305,7 +304,7 @@ async function visitorDashboard(unit) {
         case "Access Profile":
           td.textContent = visitor.accessProfileName;
           break;
-        case "Code":
+        case "Gate Code":
           td.textContent = visitor.code;
           break;
         case "Email":
@@ -479,7 +478,7 @@ async function createGuestVisitor(unit, autofill) {
       popupContainer.appendChild(lNameInput);
 
       const codeLabel = document.createElement("label");
-      codeLabel.textContent = "Code";
+      codeLabel.textContent = "Gate Code";
       popupContainer.appendChild(codeLabel);
       const codeInput = document.createElement("input");
       codeInput.classList.add("textInput");
@@ -1315,7 +1314,7 @@ async function addVisitorNoFill(unit) {
       "LastName",
       "Email",
       "Mobile Phone Number",
-      "Code",
+      "Gate Code",
       "Access Profile",
       "Time Profile",
     ];
