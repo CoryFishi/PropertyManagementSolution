@@ -210,7 +210,7 @@ async function visitorDashboard(unit) {
             editButton.classList.add("edit-btn");
             editButton.onclick = function () {
               const visitorInfo = getVisitor(guest.id);
-              const cells = row.querySelectorAll("td");
+              const cells = newRow.querySelectorAll("td");
               cells[0].textContent = visitorInfo.id;
               cells[1].textContent = visitorInfo.unitNumber;
               cells[2].textContent = visitorInfo.name;

@@ -1,7 +1,8 @@
 // Variable to track if popup is opened
 var opened = false;
 let facilitiesInfo = {};
-let favoritesInfo = [];
+let favoritesInfo =
+  JSON.parse(localStorage.getItem("favoriteFacilities")) || [];
 
 if (!localStorage.getItem("environment")) {
   localStorage.setItem("environment", "");
@@ -16,13 +17,15 @@ async function addFavorite(facility) {
     return;
   }
   favoritesInfo = [...favoritesInfo, facility];
-  favoritesInfo.sort((a, b) => a.id - b.id);
+  await favoritesInfo.sort((a, b) => a.id - b.id);
+  localStorage.setItem("favoriteFacilities", JSON.stringify(favoritesInfo));
 }
 
 async function removeFavorite(facility) {
   favoritesInfo = favoritesInfo || [];
   favoritesInfo = favoritesInfo.filter((fav) => fav.name !== facility.name);
-  favoritesInfo.sort((a, b) => a.id - b.id);
+  await favoritesInfo.sort((a, b) => a.id - b.id);
+  localStorage.setItem("favoriteFacilities", JSON.stringify(favoritesInfo));
 }
 
 // Function to fetch facilities data and return a new object
@@ -585,13 +588,20 @@ document.getElementById("authButton").addEventListener("click", async () => {
     await processFacilities(sf);
 
     for (const facility of facilitiesInfo) {
+      const facilityFavoriteExists = favoritesInfo.some(
+        (fav) => fav.name === facility.name
+      );
       const row = document.createElement("tr");
       headers.forEach((header) => {
         const td = document.createElement("td");
         switch (header) {
           case "Favorite":
+            if (facilityFavoriteExists) {
+              td.textContent = "★";
+            } else {
+              td.textContent = "☆";
+            }
             td.id = "favoriteCell";
-            td.textContent = "☆";
             td.addEventListener("click", () => {
               if (td.textContent === "☆") {
                 td.textContent = "★";
@@ -703,6 +713,7 @@ document.getElementById("authButton").addEventListener("click", async () => {
       // Append the row to the tbody
       tbody.appendChild(row);
     }
+    facilitiesTable.appendChild(tbody);
     hideLoadingSpinner();
     favoritesContainer.appendChild(facilitiesTable);
   });
@@ -767,7 +778,7 @@ function addFacilityToSavedList(facility, index, list) {
   const clientSecret = document.createElement("p");
   clientSecret.textContent = facility.secret_id;
   const env = document.createElement("p");
-  env.textContent = facility.environment;
+  env.textContent = facility.environment || "prod";
   // Create a delete button
   const deleteButton = document.createElement("button");
   deleteButton.textContent = "X";

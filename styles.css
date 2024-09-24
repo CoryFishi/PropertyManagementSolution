@@ -648,12 +648,10 @@ tr:nth-child(even) {
   background-color: #f7f7f7;
   padding: 10px;
   box-sizing: border-box;
-  width: 95%;
-  max-width: 100%;
+  max-width: 95%;
   word-wrap: break-word;
   border-radius: 5px;
   color: rgb(0, 0, 0);
-  border: 1px solid #00000059;
   box-shadow: #38414a;
   margin: 10px;
 }
@@ -688,7 +686,6 @@ tr:nth-child(even) {
 .favorites-container {
   width: 90%;
   height: 100%;
-  background-color: #2196f3;
   margin: auto;
   text-align: center;
   overflow-y: auto;
@@ -699,4 +696,8 @@ tr:nth-child(even) {
   text-align: center;
   font-size: xx-large;
   color: var(--btn-yellow);
+}
+
+#favoriteCell:hover {
+  color: var(--btn-yellow-hover);
 }
