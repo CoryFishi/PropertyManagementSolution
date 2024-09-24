@@ -134,7 +134,14 @@ button:hover,
   color: red;
   font-size: x-large;
   text-align: center;
-  margin-top: 10%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  padding: 20px;
+  border: 2px solid red;
+  text-shadow: 1px 1px 1px var(--table-border);
 }
 
 .clickable:hover {
@@ -147,11 +154,27 @@ button:hover,
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--popup-background);
-  padding: 40px;
+  padding: 30px;
   border: 2px solid var(--table-border);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   z-index: 9999;
   border-radius: 5px;
+}
+
+.new-popup-container {
+  position: fixed;
+  width: 900px;
+  height: 600px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--popup-background);
+  padding: 30px;
+  border: 2px solid var(--table-border);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  border-radius: 5px;
+  display: flex;
 }
 
 .input-wrapper {
@@ -203,6 +226,7 @@ select,
   left: 50%;
   top: 250px;
   transform: translate(-50%);
+  z-index: 9999999;
 }
 
 .spinner {
@@ -453,19 +477,19 @@ input:checked + .slider:before {
   z-index: 9999;
 }
 .addGuestVisitor-popup-container {
-  width: 250px;
-  height: 440px;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--body-background);
-  padding: 40px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--popup-background);
+  padding: 30px;
+  border-radius: 5px;
+  border: 2px solid var(--table-border);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   z-index: 9999;
+  max-width: 25vw;
 }
+
 .close-button {
   position: absolute;
   top: 10px;
@@ -539,4 +563,141 @@ tr:nth-child(even) {
 }
 .visitors-popup-container .table-container {
   max-height: 96%;
+}
+
+.menu-container {
+  height: 100%;
+  width: 15%;
+}
+
+.content-container {
+  height: 100%;
+  width: 85%;
+}
+
+.auth-menu-button {
+  width: 100%;
+  margin: 5px;
+}
+
+.facilities-container {
+  width: 100%;
+  height: 100%;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.app-container-saved {
+  width: 40%;
+  height: 100%;
+}
+
+.app-container-new {
+  width: 60%;
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-container-new label {
+  align-self: self-start;
+}
+
+.app-container-new button {
+  align-self: self-end;
+}
+
+.newHeader,
+.savedHeader {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.sfContainer h3 {
+  text-decoration: underline;
+}
+
+.app-container-saved {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: lightgray transparent;
+}
+
+.app-container-saved::-webkit-scrollbar {
+  width: 6px;
+}
+
+.app-container-saved::-webkit-scrollbar-thumb {
+  background-color: lightgray;
+  border-radius: 10px;
+}
+
+.app-container-saved::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sfContainer {
+  position: relative;
+  background-color: #f7f7f7;
+  padding: 10px;
+  box-sizing: border-box;
+  max-width: 95%;
+  word-wrap: break-word;
+  border-radius: 5px;
+  color: rgb(0, 0, 0);
+  box-shadow: #38414a;
+  margin: 10px;
+}
+
+.newError {
+  color: red;
+}
+
+.saved-delete-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: none;
+  font-size: 16px;
+  color: #ff0000;
+  background: none;
+  cursor: pointer;
+}
+
+.saved-delete-button:hover {
+  color: #d9534f;
+  background-color: #d9544f3f;
+}
+
+.facilities-container {
+  width: 90%;
+  margin: auto;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.favorites-container {
+  width: 90%;
+  height: 100%;
+  margin: auto;
+  text-align: center;
+  overflow-y: auto;
+}
+
+#favoriteCell {
+  cursor: pointer;
+  text-align: center;
+  font-size: xx-large;
+  color: var(--btn-yellow);
+}
+
+#favoriteCell:hover {
+  color: var(--btn-yellow-hover);
 }

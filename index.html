@@ -78,22 +78,23 @@
               </label>
             </div>
           </div>
-          <button id="unitButton">Add Unit</button>
-          <button id="bearerButton">Update Auth</button>
+          <button id="unitButton">Add Unit(s)</button>
+          <button id="bearerButton">Old Auth</button>
+          <button id="authButton">New Auth</button>
         </div>
       </div>
       <!-- Unit Data Table -->
       <table id="jsonTable">
         <thead>
           <tr>
-            <th class="clickable">Unit ID</th>
-            <th class="clickable">Unit Number</th>
-            <th class="clickable">Status</th>
-            <th class="clickable hide-column">Facility ID</th>
-            <th class="clickable hide-column">Property Number</th>
-            <th class="clickable hide-column">Additional Prop 1</th>
-            <th class="clickable hide-column">Additional Prop 2</th>
-            <th class="clickable hide-column">Additional Prop 3</th>
+            <th>Unit Id</th>
+            <th>Unit Number</th>
+            <th>Status</th>
+            <th class="hide-column">Facility ID</th>
+            <th class="hide-column">Property Number</th>
+            <th class="hide-column">Additional Prop 1</th>
+            <th class="hide-column">Additional Prop 2</th>
+            <th class="hide-column">Additional Prop 3</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -102,7 +103,7 @@
       <!-- Pagnation buttons -->
       <div class="center-buttons">
         <button onclick="previousPage()">Back</button>
-        <span id="pageIndicator">0 of 0</span>
+        <span id="pageIndicator">0 of 1</span>
         <button onclick="nextPage()">Next</button>
       </div>
       <!-- Footer -->
